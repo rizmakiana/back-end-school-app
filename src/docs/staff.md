@@ -140,7 +140,6 @@ Response Body(Failed: Validation):
 ```json
 {
     "errors": {
-        "errors": {
         "name": "Name can't be blank",
         "gender": "Gender can't be blank",
         "birtplaceId": "Birthplace can't be blank",
@@ -161,8 +160,19 @@ Response Body(Failed: Validation):
         "addressPlaceId": "District address can't be blank",
         "address": "Address can't be blank",
     }
+}
+```
+Response Body(Failed: back-end):
+```json
+{
+    "errors": {
+        "username": "Username already exists",
+        "email": "E-mail already exists",
+        "phoneNumber": "Phone number already exists",
+        "birthdate": "Invalid birthdate",
+        "password": "Password not equals",
+        "address": "Address not found"
     }
 }
 ```
-
 
