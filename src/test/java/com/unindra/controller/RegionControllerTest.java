@@ -57,9 +57,27 @@ class RegionControllerTest {
     }
 
     @Test
+    void testGetProvinceSuccess() throws Exception {
+        mockMvc.perform(
+                get("/api/region/provinces/11")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(result -> {
+                    WebResponse<ProvinceResponse> response = objectMapper.readValue(
+                            result.getResponse().getContentAsString(),
+                            new TypeReference<>() {
+                            });
+
+                    assertNotNull(response.getData());
+                    assertEquals("11", response.getData().getId());
+                    assertEquals("ACEH", response.getData().getName());
+                });
+    }
+
+    @Test
     void testGetRegencyListSuccess() throws Exception {
         mockMvc.perform(
-                get("/api/region/provinces/32/regencies")
+                get("/api/region/regencies?provinceId=32")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(result -> {
@@ -77,9 +95,27 @@ class RegionControllerTest {
     }
 
     @Test
+    void testGetRegencySuccess() throws Exception {
+        mockMvc.perform(
+                get("/api/region/regencies/3201")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(result -> {
+                    WebResponse<ProvinceResponse> response = objectMapper.readValue(
+                            result.getResponse().getContentAsString(),
+                            new TypeReference<>() {
+                            });
+
+                    assertNotNull(response.getData());
+                    assertEquals("3201", response.getData().getId());
+                    assertEquals("KAB. BOGOR", response.getData().getName());
+                });
+    }
+
+    @Test
     void testGetDistrictListSuccess() throws Exception {
         mockMvc.perform(
-                get("/api/region/provinces/32/regencies/3201/districts")
+                get("/api/region/districts?regencyId=3201")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(result -> {
@@ -93,6 +129,25 @@ class RegionControllerTest {
 
                     assertEquals("320102", response.getData().get(1).getId());
                     assertEquals("Gunung Putri", response.getData().get(1).getName());
+                });
+    }
+
+    @Test
+    void testGetDistrictSuccess() throws Exception {
+        mockMvc.perform(
+                get("/api/region/districts/320102")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(result -> {
+                    WebResponse<ProvinceResponse> response = objectMapper.readValue(
+                            result.getResponse().getContentAsString(),
+                            new TypeReference<>() {
+                            });
+
+                    assertNotNull(response.getData());
+
+                    assertEquals("320102", response.getData().getId());
+                    assertEquals("Gunung Putri", response.getData().getName());
                 });
     }
 }
