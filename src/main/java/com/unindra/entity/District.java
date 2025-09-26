@@ -1,8 +1,9 @@
 package com.unindra.entity;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,6 +23,7 @@ public class District {
     
     private String name;
 
-    @Column(name = "regnecy_id")
+    @ManyToOne
+    @JoinColumn(name = "regency_id")
     private Regency regency; 
 }
