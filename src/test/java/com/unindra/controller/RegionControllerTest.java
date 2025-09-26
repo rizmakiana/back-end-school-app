@@ -75,5 +75,25 @@ class RegionControllerTest {
                     assertEquals("KAB. BOGOR", response.getData().get(0).getName());
                 });
     }
+
+    @Test
+    void testGetDistrictListSuccess() throws Exception {
+        mockMvc.perform(
+                get("/api/region/provinces/32/regencies/3201/districts")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(result -> {
+                    WebResponse<List<ProvinceResponse>> response = objectMapper.readValue(
+                            result.getResponse().getContentAsString(),
+                            new TypeReference<>() {
+                            });
+
+                    assertNotNull(response.getData());
+                    assertFalse(response.getData().isEmpty());
+
+                    assertEquals("320102", response.getData().get(1).getId());
+                    assertEquals("Gunung Putri", response.getData().get(1).getName());
+                });
+    }
 }
 

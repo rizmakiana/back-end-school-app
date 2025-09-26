@@ -8,9 +8,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.unindra.model.response.DistrictResponse;
 import com.unindra.model.response.ProvinceResponse;
 import com.unindra.model.response.RegencyResponse;
 import com.unindra.model.response.WebResponse;
+import com.unindra.service.DistrictService;
 import com.unindra.service.ProvinceService;
 import com.unindra.service.RegencyService;
 
@@ -24,7 +26,9 @@ public class RegionController {
     private final ProvinceService provinceService;
 
     private final RegencyService regencyService;
-    
+
+    private final DistrictService districtService;
+
     @GetMapping("/provinces")
     public ResponseEntity<WebResponse<List<ProvinceResponse>>> getProvinces() {
         return ResponseEntity.ok(WebResponse.<List<ProvinceResponse>>builder()
@@ -33,10 +37,19 @@ public class RegionController {
     }
 
     @GetMapping("/provinces/{provinceId}/regencies")
-    public ResponseEntity<WebResponse<List<RegencyResponse>>> getRegencyListByProvinceId(@PathVariable String provinceId) {
+    public ResponseEntity<WebResponse<List<RegencyResponse>>> getRegencyListByProvinceId(
+            @PathVariable String provinceId) {
         return ResponseEntity.ok(WebResponse.<List<RegencyResponse>>builder()
-        .data(regencyService.getRegencyListByProvinceId(provinceId))
-        .build());
+                .data(regencyService.getRegencyListByProvinceId(provinceId))
+                .build());
     }
-    
+
+    @GetMapping("/provinces/{provinceId}/regencies/{regencyId}/districts")
+    public ResponseEntity<WebResponse<List<DistrictResponse>>> getDistrictListByProvinceId(
+            @PathVariable String provinceId, @PathVariable String regencyId) {
+        return ResponseEntity.ok(WebResponse.<List<DistrictResponse>>builder()
+                .data(districtService.getDistrictListByRegencyId(regencyId))
+                .build());
+    }
+
 }

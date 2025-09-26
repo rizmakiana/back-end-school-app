@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.unindra.model.response.RegencyResponse;
-import com.unindra.model.response.RegencyResponse.RegencyResponseBuilder;
 import com.unindra.repository.RegencyRepository;
 
 import lombok.RequiredArgsConstructor;
