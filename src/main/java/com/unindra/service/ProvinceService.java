@@ -2,7 +2,9 @@ package com.unindra.service;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.unindra.model.response.ProvinceResponse;
 import com.unindra.repository.ProvinceRepository;
@@ -22,4 +24,14 @@ public class ProvinceService {
                         .name(province.getName()).build())
                 .toList();
     }
+
+    public ProvinceResponse getProvinceById(String id) {
+        return repository.findById(id)
+                .map(result -> ProvinceResponse.builder()
+                        .id(result.getId())
+                        .name(result.getName())
+                        .build())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "NOT FOUND"));
+    }
+
 }

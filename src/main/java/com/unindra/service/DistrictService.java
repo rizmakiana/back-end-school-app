@@ -2,7 +2,9 @@ package com.unindra.service;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.unindra.model.response.DistrictResponse;
 import com.unindra.repository.DistrictRepository;
@@ -13,14 +15,22 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DistrictService {
 
-    private final DistrictRepository districtRepository;
+    private final DistrictRepository repository;
 
     public List<DistrictResponse> getDistrictListByRegencyId(String regencyId) {
-        return districtRepository.findByRegencyId(regencyId).stream()
+        return repository.findByRegencyId(regencyId).stream()
                 .map(district -> DistrictResponse.builder()
                         .id(district.getId())
                         .name(district.getName())
                         .build())
                 .toList();
+    }
+
+    public DistrictResponse getDistrictById(String id) {
+        return repository.findById(id)
+                .map(result -> DistrictResponse.builder()
+                        .id(result.getId())
+                        .name(result.getName()).build())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "NOT FOUND"));
     }
 }
