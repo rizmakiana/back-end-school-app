@@ -1,9 +1,12 @@
 package com.unindra.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,12 +21,26 @@ import lombok.Setter;
 @Table(name = "districts")
 public class District {
 
-    @Id
-    private String id;
+    // @Id
+    // private String id;
     
+    // private String name;
+
+    // @ManyToOne
+    // // @JoinColumn(name = "regency_id")
+    // @JoinColumn(name = "regency_id", foreignKey = @ForeignKey(name = "fk_regency"))
+    // private Regency regency; 
+    @Id
+    @Column(length = 6)
+    private String id;
+
+    @Column(nullable = false)
     private String name;
 
     @ManyToOne
-    @JoinColumn(name = "regency_id")
-    private Regency regency; 
+    @JoinColumn(name = "regency_id", nullable = false, foreignKey = @ForeignKey(name = "fk_regency"))
+    private Regency regency;
+
+    @OneToOne(mappedBy = "districtAddress")
+    private User user;
 }

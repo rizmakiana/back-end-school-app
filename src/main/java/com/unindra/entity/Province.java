@@ -2,6 +2,8 @@ package com.unindra.entity;
 
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
@@ -19,12 +21,21 @@ import lombok.Setter;
 @Table(name = "provinces")
 public class Province {
 
+    // @Id
+    // private String id;
+
+    // private String name;
+
+    // @OneToMany(mappedBy = "province")
+    // private List<Regency> regencies;
     @Id
+    @Column(length = 2)
     private String id;
 
+    @Column(nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "province")
+    @OneToMany(mappedBy = "province", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Regency> regencies;
     
 }
