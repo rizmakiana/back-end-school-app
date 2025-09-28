@@ -50,6 +50,6 @@ public class Regency {
     @OneToMany(mappedBy = "regency", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<District> districts;
     
-    @OneToOne(mappedBy = "birthplace")
-    private User user;
+    @OneToMany(mappedBy = "birthplace")
+    private List<User> users;
 }

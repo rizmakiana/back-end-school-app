@@ -1,11 +1,14 @@
 package com.unindra.entity;
 
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -41,6 +44,6 @@ public class District {
     @JoinColumn(name = "regency_id", nullable = false, foreignKey = @ForeignKey(name = "fk_regency"))
     private Regency regency;
 
-    @OneToOne(mappedBy = "districtAddress")
-    private User user;
+    @OneToMany(mappedBy = "districtAddress")
+    private List<User> users;
 }

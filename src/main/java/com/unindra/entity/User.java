@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -29,19 +30,19 @@ import lombok.Setter;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     private String name;
 
     private Gender gender;
 
-    @OneToOne @JoinColumn(name = "birthplace_id")
+    @ManyToOne @JoinColumn(name = "birthplace_id")
     private Regency birthplace;
     
     private LocalDate birthDate;
     
-    @OneToOne @JoinColumn(name = "district_address_id")
+    @ManyToOne @JoinColumn(name = "district_address_id")
     private District districtAddress;
 
     private String address;
