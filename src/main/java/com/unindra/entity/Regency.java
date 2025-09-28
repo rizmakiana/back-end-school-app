@@ -10,7 +10,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,17 +24,6 @@ import lombok.Setter;
 @Table(name = "regencies")
 public class Regency {
 
-    // @Id
-    // private String id;
-
-    // private String name;
-
-    // @ManyToOne
-    // @JoinColumn(name = "province_id", foreignKey = @ForeignKey(name = "fk_province"))
-    // private Province province;
-
-    // @OneToMany(mappedBy = "regency")
-    // private List<District> districts;
     @Id
     @Column(length = 4)
     private String id;
