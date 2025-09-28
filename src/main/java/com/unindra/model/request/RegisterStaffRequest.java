@@ -42,7 +42,7 @@ public class RegisterStaffRequest {
     @NotBlank(message = "{username.notblank}")
     private String username;
 
-    @NotBlank(message = "{passworrd.notblank}")
+    @NotBlank(message = "{password.notblank}")
     private String password;
 
     @NotBlank(message = "{confirm.password.notblank}")
