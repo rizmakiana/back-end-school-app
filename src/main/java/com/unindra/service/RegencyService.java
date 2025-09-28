@@ -1,11 +1,13 @@
 package com.unindra.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.unindra.entity.Regency;
 import com.unindra.model.response.RegencyResponse;
 import com.unindra.repository.RegencyRepository;
 
@@ -33,5 +35,9 @@ public class RegencyService {
                         .name(result.getName())
                         .build())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "NOT FOUND"));
+    }
+
+    public Optional<Regency> findById(String id) {
+        return repository.findById(id);
     }
 }

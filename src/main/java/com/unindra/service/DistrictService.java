@@ -1,11 +1,13 @@
 package com.unindra.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.unindra.entity.District;
 import com.unindra.model.response.DistrictResponse;
 import com.unindra.repository.DistrictRepository;
 
@@ -32,5 +34,9 @@ public class DistrictService {
                         .id(result.getId())
                         .name(result.getName()).build())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "NOT FOUND"));
+    }
+
+    public Optional<District> findById(String id) {
+        return repository.findById(id);
     }
 }
