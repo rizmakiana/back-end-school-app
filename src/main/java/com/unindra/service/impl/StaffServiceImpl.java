@@ -3,6 +3,7 @@ package com.unindra.service.impl;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.Locale;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -82,6 +83,21 @@ public class StaffServiceImpl implements StaffService {
         staff.setRole(Role.STAFF);
 
         repository.save(staff);
+    }
+
+    @Override
+    public Optional<Staff> findAccount(String args) {
+        
+        if (isPhoneNumberExists(args)) {
+            return repository.findByPhoneNumber(args);
+        }
+        
+        if (isEmailExists(args)) {
+            return repository.findByEmail(args);
+        }
+        
+        return repository.findByUsername(args);
+
     }
 
     public boolean isUsernameExists(String username) {
