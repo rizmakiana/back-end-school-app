@@ -36,3 +36,6 @@ build/
 ### Environment files ###
 .env
 .env.*
+
+# Ignore test-specific config
+src/main/resources/application-test.properties
