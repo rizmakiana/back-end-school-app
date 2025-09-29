@@ -6,10 +6,13 @@ import java.util.Locale;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.unindra.entity.Department;
 import com.unindra.model.request.DepartmentRequest;
 import com.unindra.model.response.DepartmentResponse;
 import com.unindra.repository.DepartmentRepository;
 import com.unindra.service.DepartmentService;
+import com.unindra.service.ValidationService;
+import com.unindra.util.ExceptionUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,6 +21,8 @@ import lombok.RequiredArgsConstructor;
 public class DepartmentServiceImpl implements DepartmentService {
 
     private final DepartmentRepository repository;
+
+    private final ValidationService validationService;
 
     @Override
     @Transactional
@@ -34,10 +39,22 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public void add(DepartmentRequest request, Locale Locale) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'add'");
-    }
-    
+        validationService.validate(request);
+
+        if (isNameExists(request.getName())) {
+            throw ExceptionUtil.badRequest("department.name.notblank", Locale);
+        }
+        
+        if (isCodeNameExists(request.getCode())) {
+            throw ExceptionUtil.badRequest("department.code.notblank", Locale);
+        }
+
+        Department department = new Department();
+        department.setName(request.getName());
+        department.setCode(request.getCode());
+        
+        repository.save(department);
+    }    
 
     @Override
     public void update(DepartmentRequest request, Locale Locale) {

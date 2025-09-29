@@ -1,7 +1,10 @@
 package com.unindra.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -25,6 +28,7 @@ import com.unindra.entity.Department;
 import com.unindra.entity.District;
 import com.unindra.entity.Regency;
 import com.unindra.entity.Staff;
+import com.unindra.model.request.DepartmentRequest;
 import com.unindra.model.response.DepartmentResponse;
 import com.unindra.model.response.TokenResponse;
 import com.unindra.model.response.WebResponse;
@@ -145,6 +149,39 @@ public class DepartmentControllerTest {
                     assertNotNull(responseBody);
                     System.out.println("Unauthorized response: " + responseBody);
                 });
+    }
+
+    @Test
+    public void testCreatedDepartment() throws Exception {
+        Staff staff = staffRepository.findByUsername("zahra").orElse(null);
+
+        TokenResponse token = jwtUtil.generateToken(staff);
+
+        DepartmentRequest request = DepartmentRequest.builder()
+                .name("Akuntansi")
+                .code("AK")
+                .build();
+
+        mockMvc.perform(
+                post("/api/staff/departments")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken())
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andDo(result -> {
+                    WebResponse<String> response = objectMapper.readValue(
+                            result.getResponse().getContentAsString(),
+                            new TypeReference<WebResponse<String>>() {
+                            });
+
+                    assertNotNull(response);
+                    assertNotNull(response.getMessage());
+                    assertEquals("Department created succesfully", response.getMessage());
+                });
+        assertTrue(repository.existsByName(request.getName()));
+        assertTrue(repository.existsByCode(request.getCode()));
     }
 
 }
