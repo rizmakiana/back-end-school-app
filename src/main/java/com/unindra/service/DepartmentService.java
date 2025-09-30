@@ -12,7 +12,7 @@ public interface DepartmentService {
 
     void add(DepartmentRequest request, Locale Locale);
 
-    void update(DepartmentRequest request, Locale Locale);
+    void update(String id, DepartmentRequest request, Locale Locale);
 
     void delete(String id);
 

@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDate;
@@ -247,5 +248,108 @@ public class DepartmentControllerTest {
                                         assertNotNull(response.getErrors());
                                 });
         }
+
+        @Test
+        public void testUpdatedDepartmentSuccess() throws Exception {
+                Staff staff = staffRepository.findByUsername("zahra").orElse(null);
+
+                Department dept = repository.findByCode("MIPA").orElse(null);
+                TokenResponse token = jwtUtil.generateToken(staff);
+
+                DepartmentRequest request = DepartmentRequest.builder()
+                                .name("Ilmu Pengetahuan Alam")
+                                .code("IPA")
+                                .build();
+
+                mockMvc.perform(
+                                patch("/api/staff/departments/" + dept.getId())
+                                                .accept(MediaType.APPLICATION_JSON)
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+                                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken())
+                                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isOk())
+                                .andDo(result -> {
+                                        WebResponse<String> response = objectMapper.readValue(
+                                                        result.getResponse().getContentAsString(),
+                                                        new TypeReference<WebResponse<String>>() {
+                                                        });
+
+                                        assertNull(response.getErrors());
+                                });
+                Department dept2 = repository.findByCode("IPA").orElse(null);
+
+                assertEquals(dept.getId(), dept2.getId());
+                assertEquals(request.getName(), dept2.getName());
+                assertEquals(request.getCode(), dept2.getCode());
+        }
+
+        @Test
+        public void testUpdatedDepartmentFailExists() throws Exception {
+                Staff staff = staffRepository.findByUsername("zahra").orElse(null);
+
+                Department dept = repository.findByCode("MIPA").orElse(null);
+                TokenResponse token = jwtUtil.generateToken(staff);
+
+                DepartmentRequest request = DepartmentRequest.builder()
+                                .name("Materi Ilmu Pengetahuan Alam")
+                                .code("IPS")
+                                .build();
+
+                mockMvc.perform(
+                                patch("/api/staff/departments/" + dept.getId())
+                                                .accept(MediaType.APPLICATION_JSON)
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+                                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken())
+                                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isBadRequest())
+                                .andDo(result -> {
+                                        WebResponse<String> response = objectMapper.readValue(
+                                                        result.getResponse().getContentAsString(),
+                                                        new TypeReference<WebResponse<String>>() {
+                                                        });
+
+                                        assertNotNull(response.getErrors());
+                                });
+                Department dept2 = repository.findByCode("MIPA").orElse(null);
+
+                assertNotNull(dept2);
+                assertEquals(dept.getId(), dept2.getId());
+                assertEquals(dept.getName(), dept2.getName());
+                assertEquals(dept.getCode(), dept2.getCode());
+        }
+
+        @Test
+        public void testUpdatedDepartmentFailValidation() throws Exception {
+                Staff staff = staffRepository.findByUsername("zahra").orElse(null);
+
+                Department dept = repository.findByCode("MIPA").orElse(null);
+                TokenResponse token = jwtUtil.generateToken(staff);
+
+                DepartmentRequest request = DepartmentRequest.builder()
+                                .name("")
+                                .code("")
+                                .build();
+
+                mockMvc.perform(
+                                patch("/api/staff/departments/" + dept.getId())
+                                                .accept(MediaType.APPLICATION_JSON)
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+                                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken())
+                                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isBadRequest())
+                                .andDo(result -> {
+                                        WebResponse<String> response = objectMapper.readValue(
+                                                        result.getResponse().getContentAsString(),
+                                                        new TypeReference<WebResponse<String>>() {
+                                                        });
+
+                                        assertEquals("Validation failed", response.getMessage());
+                                        assertNotNull(response.getErrors());
+                                });
+        }
+
 
 }

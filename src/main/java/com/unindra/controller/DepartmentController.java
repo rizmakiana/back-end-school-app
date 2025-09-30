@@ -17,6 +17,8 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -48,6 +50,19 @@ public class DepartmentController {
         service.add(request, locale);
         return ResponseEntity.ok(WebResponse.<String>builder()
                 .message(source.getMessage("department.created", null, locale)).build());
+    }
+
+    @PatchMapping(path = "/{id}")
+    public ResponseEntity<WebResponse<String>> update(
+            @PathVariable String id,
+            @RequestBody DepartmentRequest request,
+            Locale locale,
+            Authentication authentication) {
+
+        service.update(id, request, locale);
+        return ResponseEntity.ok(WebResponse.<String>builder()
+                .message(source.getMessage("department.updated", null, locale))
+                .build());
     }
 
 }

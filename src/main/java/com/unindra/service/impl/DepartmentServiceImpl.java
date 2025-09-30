@@ -44,7 +44,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         if (isNameExists(request.getName())) {
             throw ExceptionUtil.badRequest("department.name.exists", Locale);
         }
-        
+
         if (isCodeNameExists(request.getCode())) {
             throw ExceptionUtil.badRequest("department.code.exists", Locale);
         }
@@ -52,14 +52,36 @@ public class DepartmentServiceImpl implements DepartmentService {
         Department department = new Department();
         department.setName(request.getName());
         department.setCode(request.getCode());
-        
+
         repository.save(department);
-    }    
+    }
 
     @Override
-    public void update(DepartmentRequest request, Locale Locale) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'update'");
+    public void update(String id, DepartmentRequest request, Locale locale) {
+        validationService.validate(request);
+
+        Department departmentTarget = repository.findById(id)
+                .orElseThrow(() -> ExceptionUtil.notFound("department.notfound", locale));
+
+        // Cek apakah name sudah dipakai department lain
+        repository.findByName(request.getName()).ifPresent(dept -> {
+            if (!dept.getId().equals(departmentTarget.getId())) {
+                throw ExceptionUtil.badRequest("department.name.exists", locale);
+            }
+        });
+
+        // Cek apakah code sudah dipakai department lain
+        repository.findByCode(request.getCode()).ifPresent(dept -> {
+            if (!dept.getId().equals(departmentTarget.getId())) {
+                throw ExceptionUtil.badRequest("department.code.exists", locale);
+            }
+        });
+
+        // Update data
+        departmentTarget.setName(request.getName());
+        departmentTarget.setCode(request.getCode());
+
+        repository.save(departmentTarget);
     }
 
     @Override
@@ -68,16 +90,16 @@ public class DepartmentServiceImpl implements DepartmentService {
         throw new UnsupportedOperationException("Unimplemented method 'delete'");
     }
 
-    public boolean isNameExists(String name){
-        
+    public boolean isNameExists(String name) {
+
         return repository.existsByName(name);
 
     }
 
     public boolean isCodeNameExists(String code) {
-        
+
         return repository.existsByCode(code);
 
     }
-    
+
 }
