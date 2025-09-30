@@ -14,6 +14,6 @@ public interface DepartmentService {
 
     void update(String id, DepartmentRequest request, Locale Locale);
 
-    void delete(String id);
+    void delete(String id, Locale locale);
 
 }

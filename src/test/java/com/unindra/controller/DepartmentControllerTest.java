@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -26,6 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.unindra.entity.Classroom;
 import com.unindra.entity.Department;
 import com.unindra.entity.District;
 import com.unindra.entity.Regency;
@@ -351,5 +354,64 @@ public class DepartmentControllerTest {
                                 });
         }
 
+        @Test
+        public void testDeletedDepartmentSuccess() throws Exception {
+                Staff staff = staffRepository.findByUsername("zahra").orElse(null);
 
+                Department dept = repository.findByCode("MIPA").orElse(null);
+                TokenResponse token = jwtUtil.generateToken(staff);
+
+                mockMvc.perform(
+                                delete("/api/staff/departments/" + dept.getId())
+                                                .accept(MediaType.APPLICATION_JSON)
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+                                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken()))
+                                .andExpect(status().isOk())
+                                .andDo(result -> {
+                                        WebResponse<String> response = objectMapper.readValue(
+                                                        result.getResponse().getContentAsString(),
+                                                        new TypeReference<WebResponse<String>>() {
+                                                        });
+
+                                        assertEquals("Department deleted succesfully", response.getMessage());
+                                        assertNull(response.getErrors());
+                                });
+                Department department = repository.findById(dept.getId()).orElse(null);
+
+                assertNull(department);
+                assertFalse(repository.existsByName(dept.getName()));
+                assertFalse(repository.existsByName(dept.getCode()));
+        }
+
+        @Test
+        @Disabled
+        public void testDeletedDepartmentFail() throws Exception {
+                Staff staff = staffRepository.findByUsername("zahra").orElse(null);
+
+                Department dept = repository.findByCode("MIPA").orElse(null);
+                TokenResponse token = jwtUtil.generateToken(staff);
+
+                mockMvc.perform(
+                                delete("/api/staff/departments/" + dept.getId())
+                                                .accept(MediaType.APPLICATION_JSON)
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+                                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken()))
+                                .andExpect(status().isOk())
+                                .andDo(result -> {
+                                        WebResponse<String> response = objectMapper.readValue(
+                                                        result.getResponse().getContentAsString(),
+                                                        new TypeReference<WebResponse<String>>() {
+                                                        });
+
+                                        assertEquals("Department deleted succesfully", response.getMessage());
+                                        assertNull(response.getErrors());
+                                });
+                Department department = repository.findById(dept.getId()).orElse(null);
+
+                assertNull(department);
+                assertFalse(repository.existsByName(dept.getName()));
+                assertFalse(repository.existsByName(dept.getCode()));
+        }
 }

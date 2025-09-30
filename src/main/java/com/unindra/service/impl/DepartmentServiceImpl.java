@@ -85,9 +85,15 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    public void delete(String id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'delete'");
+    public void delete(String id, Locale locale) {
+        Department dept = repository.findById(id)
+                .orElseThrow(() -> ExceptionUtil.notFound("department.notFound", locale));
+
+        if (!dept.getClassrooms().isEmpty()) {
+            throw ExceptionUtil.badRequest("department.has.classroom", locale);
+        }
+
+        repository.delete(dept);
     }
 
     public boolean isNameExists(String name) {

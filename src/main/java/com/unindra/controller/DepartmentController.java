@@ -16,6 +16,7 @@ import java.util.Locale;
 import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -62,6 +63,17 @@ public class DepartmentController {
         service.update(id, request, locale);
         return ResponseEntity.ok(WebResponse.<String>builder()
                 .message(source.getMessage("department.updated", null, locale))
+                .build());
+    }
+
+    @DeleteMapping(path = "/{id}")
+    public ResponseEntity<WebResponse<String>> delete(
+            @PathVariable String id,
+            Locale locale) {
+
+        service.delete(id, locale);
+        return ResponseEntity.ok(WebResponse.<String>builder()
+                .message(source.getMessage("department.deleted", null, locale))
                 .build());
     }
 
