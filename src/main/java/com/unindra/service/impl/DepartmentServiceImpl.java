@@ -42,11 +42,11 @@ public class DepartmentServiceImpl implements DepartmentService {
         validationService.validate(request);
 
         if (isNameExists(request.getName())) {
-            throw ExceptionUtil.badRequest("department.name.notblank", Locale);
+            throw ExceptionUtil.badRequest("department.name.exists", Locale);
         }
         
         if (isCodeNameExists(request.getCode())) {
-            throw ExceptionUtil.badRequest("department.code.notblank", Locale);
+            throw ExceptionUtil.badRequest("department.code.exists", Locale);
         }
 
         Department department = new Department();
