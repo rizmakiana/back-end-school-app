@@ -13,6 +13,6 @@ public class DepartmentResponse {
 
     private String code;
 
-    private String totalClassroom;
+    private Integer totalClassroom;
 
 }
