@@ -3,6 +3,7 @@ package com.unindra.controller;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -45,143 +46,206 @@ import com.unindra.util.JwtUtil;
 @ActiveProfiles("test")
 public class DepartmentControllerTest {
 
-    @Autowired
-    private DepartmentRepository repository;
+        @Autowired
+        private DepartmentRepository repository;
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+        @Autowired
+        private ObjectMapper objectMapper;
 
-    @Autowired
-    private JwtUtil jwtUtil;
+        @Autowired
+        private JwtUtil jwtUtil;
 
-    @Autowired
-    private StaffRepository staffRepository;
+        @Autowired
+        private StaffRepository staffRepository;
 
-    @Autowired
-    private RegencyRepository regencyRepository;
+        @Autowired
+        private RegencyRepository regencyRepository;
 
-    @Autowired
-    private DistrictRepository districtRepository;
+        @Autowired
+        private DistrictRepository districtRepository;
 
-    @BeforeEach
-    public void setup() {
-        repository.deleteAll();
-        staffRepository.deleteAll();
+        @BeforeEach
+        public void setup() {
+                repository.deleteAll();
+                staffRepository.deleteAll();
 
-        Department d = new Department();
-        d.setName("Materi Ilmu Pengetahuan Alam");
-        d.setCode("MIPA");
-        repository.save(d);
+                Department d = new Department();
+                d.setName("Materi Ilmu Pengetahuan Alam");
+                d.setCode("MIPA");
+                repository.save(d);
 
-        Department f = new Department();
-        f.setName("Ilmu Pengetahuan Sosial");
-        f.setCode("IPS");
-        repository.save(f);
+                Department f = new Department();
+                f.setName("Ilmu Pengetahuan Sosial");
+                f.setCode("IPS");
+                repository.save(f);
 
-        staffRepository.deleteAll();
+                staffRepository.deleteAll();
 
-        Staff staff = new Staff();
+                Staff staff = new Staff();
 
-        Regency regency = regencyRepository.findById("3201").orElse(null);
-        District district = districtRepository.findById("320101").orElse(null);
+                Regency regency = regencyRepository.findById("3201").orElse(null);
+                District district = districtRepository.findById("320101").orElse(null);
 
-        staff.setName("Zahra Hanifa");
-        staff.setGender(Gender.FEMALE);
-        staff.setBirthDate(LocalDate.of(2003, 4, 14));
-        staff.setBirthplace(regency);
-        staff.setDistrictAddress(district);
-        staff.setAddress("Kp. Jatiasih no 96");
-        staff.setUsername("zahra");
-        staff.setPassword(BCrypt.hashpw("rahasia", BCrypt.gensalt()));
-        staff.setEmail("zahra@gmail.com");
-        staff.setPhoneNumber("0831341341");
+                staff.setName("Zahra Hanifa");
+                staff.setGender(Gender.FEMALE);
+                staff.setBirthDate(LocalDate.of(2003, 4, 14));
+                staff.setBirthplace(regency);
+                staff.setDistrictAddress(district);
+                staff.setAddress("Kp. Jatiasih no 96");
+                staff.setUsername("zahra");
+                staff.setPassword(BCrypt.hashpw("rahasia", BCrypt.gensalt()));
+                staff.setEmail("zahra@gmail.com");
+                staff.setPhoneNumber("0831341341");
 
-        staffRepository.save(staff);
+                staffRepository.save(staff);
 
-    }
+        }
 
-    @Test
-    public void testGetAll_Success() throws Exception {
-        Staff staff = staffRepository.findByUsername("zahra").orElse(null);
+        @Test
+        public void testGetAll_Success() throws Exception {
+                Staff staff = staffRepository.findByUsername("zahra").orElse(null);
 
-        TokenResponse token = jwtUtil.generateToken(staff);
+                TokenResponse token = jwtUtil.generateToken(staff);
 
-        mockMvc.perform(
-                get("/api/staff/departments")
-                        .accept(MediaType.APPLICATION_JSON)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken()))
-                .andExpect(
-                        status().isOk())
-                .andDo(result -> {
-                    WebResponse<List<DepartmentResponse>> response = objectMapper.readValue(
-                            result.getResponse().getContentAsString(),
-                            new TypeReference<WebResponse<List<DepartmentResponse>>>() {
-                            });
+                mockMvc.perform(
+                                get("/api/staff/departments")
+                                                .accept(MediaType.APPLICATION_JSON)
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken()))
+                                .andExpect(
+                                                status().isOk())
+                                .andDo(result -> {
+                                        WebResponse<List<DepartmentResponse>> response = objectMapper.readValue(
+                                                        result.getResponse().getContentAsString(),
+                                                        new TypeReference<WebResponse<List<DepartmentResponse>>>() {
+                                                        });
 
-                    assertNotNull(response);
-                    assertNotNull(response.getData());
-                    assertFalse(response.getData().isEmpty());
-                });
-    }
+                                        assertNotNull(response);
+                                        assertNotNull(response.getData());
+                                        assertFalse(response.getData().isEmpty());
+                                });
+        }
 
-    @Test
-    public void testGetAll_Unauthorized() throws Exception {
-        // Staff staff = staffRepository.findByUsername("zahra").orElse(null);
+        @Test
+        public void testGetAll_Unauthorized() throws Exception {
+                // Staff staff = staffRepository.findByUsername("zahra").orElse(null);
 
-        // ini token valid (ga dipakai di test ini, cuma buat pembanding aja)
-        // TokenResponse token = jwtUtil.generateToken(staff);
+                // ini token valid (ga dipakai di test ini, cuma buat pembanding aja)
+                // TokenResponse token = jwtUtil.generateToken(staff);
 
-        // ini token random (invalid)
-        String invalidToken = UUID.randomUUID().toString();
+                // ini token random (invalid)
+                String invalidToken = UUID.randomUUID().toString();
 
-        mockMvc.perform(
-                get("/api/staff/departments")
-                        .accept(MediaType.APPLICATION_JSON)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidToken))
-                .andExpect(status().isUnauthorized())
-                .andDo(result -> {
-                    String responseBody = result.getResponse().getContentAsString();
-                    assertNotNull(responseBody);
-                    System.out.println("Unauthorized response: " + responseBody);
-                });
-    }
+                mockMvc.perform(
+                                get("/api/staff/departments")
+                                                .accept(MediaType.APPLICATION_JSON)
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidToken))
+                                .andExpect(status().isUnauthorized())
+                                .andDo(result -> {
+                                        String responseBody = result.getResponse().getContentAsString();
+                                        assertNotNull(responseBody);
+                                        System.out.println("Unauthorized response: " + responseBody);
+                                });
+        }
 
-    @Test
-    public void testCreatedDepartment() throws Exception {
-        Staff staff = staffRepository.findByUsername("zahra").orElse(null);
+        @Test
+        public void testCreatedDepartmentSuccess() throws Exception {
+                Staff staff = staffRepository.findByUsername("zahra").orElse(null);
 
-        TokenResponse token = jwtUtil.generateToken(staff);
+                TokenResponse token = jwtUtil.generateToken(staff);
 
-        DepartmentRequest request = DepartmentRequest.builder()
-                .name("Akuntansi")
-                .code("AK")
-                .build();
+                DepartmentRequest request = DepartmentRequest.builder()
+                                .name("Akuntansi")
+                                .code("AK")
+                                .build();
 
-        mockMvc.perform(
-                post("/api/staff/departments")
-                        .accept(MediaType.APPLICATION_JSON)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken())
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andDo(result -> {
-                    WebResponse<String> response = objectMapper.readValue(
-                            result.getResponse().getContentAsString(),
-                            new TypeReference<WebResponse<String>>() {
-                            });
+                mockMvc.perform(
+                                post("/api/staff/departments")
+                                                .accept(MediaType.APPLICATION_JSON)
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+                                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken())
+                                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isOk())
+                                .andDo(result -> {
+                                        WebResponse<String> response = objectMapper.readValue(
+                                                        result.getResponse().getContentAsString(),
+                                                        new TypeReference<WebResponse<String>>() {
+                                                        });
 
-                    assertNotNull(response);
-                    assertNotNull(response.getMessage());
-                    assertEquals("Department created succesfully", response.getMessage());
-                });
-        assertTrue(repository.existsByName(request.getName()));
-        assertTrue(repository.existsByCode(request.getCode()));
-    }
+                                        assertNotNull(response);
+                                        assertNotNull(response.getMessage());
+                                        assertEquals("Department created succesfully", response.getMessage());
+                                });
+                assertTrue(repository.existsByName(request.getName()));
+                assertTrue(repository.existsByCode(request.getCode()));
+        }
+
+        @Test
+        public void testCreatedDepartmentFailIsExists() throws Exception {
+                Staff staff = staffRepository.findByUsername("zahra").orElse(null);
+
+                TokenResponse token = jwtUtil.generateToken(staff);
+
+                DepartmentRequest request = DepartmentRequest.builder()
+                                .name("Materi Ilmu Pengetahuan Alam")
+                                .code("MIPA")
+                                .build();
+
+                mockMvc.perform(
+                                post("/api/staff/departments")
+                                                .accept(MediaType.APPLICATION_JSON)
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+                                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken())
+                                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isBadRequest())
+                                .andDo(result -> {
+                                        WebResponse<String> response = objectMapper.readValue(
+                                                        result.getResponse().getContentAsString(),
+                                                        new TypeReference<WebResponse<String>>() {
+                                                        });
+
+                                        assertNull(response.getMessage());
+                                        assertNotNull(response.getErrors());
+                                        assertEquals("Department already exists", response.getErrors());
+                                });
+                assertTrue(repository.existsByName(request.getName()));
+                assertTrue(repository.existsByCode(request.getCode()));
+        }
+
+        @Test
+        public void testCreatedDepartmentFailBlankField() throws Exception {
+                Staff staff = staffRepository.findByUsername("zahra").orElse(null);
+
+                TokenResponse token = jwtUtil.generateToken(staff);
+
+                DepartmentRequest request = DepartmentRequest.builder()
+                                .name("")
+                                .code("")
+                                .build();
+
+                mockMvc.perform(
+                                post("/api/staff/departments")
+                                                .accept(MediaType.APPLICATION_JSON)
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+                                                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken())
+                                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isBadRequest())
+                                .andDo(result -> {
+                                        WebResponse<String> response = objectMapper.readValue(
+                                                        result.getResponse().getContentAsString(),
+                                                        new TypeReference<WebResponse<String>>() {
+                                                        });
+
+                                        assertEquals("Validation failed", response.getMessage());
+                                        assertNotNull(response.getErrors());
+                                });
+        }
 
 }
