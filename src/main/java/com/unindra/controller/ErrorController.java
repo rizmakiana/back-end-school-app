@@ -1,8 +1,11 @@
 package com.unindra.controller;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -12,9 +15,13 @@ import com.unindra.model.response.WebResponse;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import lombok.RequiredArgsConstructor;
 
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class ErrorController {
+
+    private final MessageSource messageSource;
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<WebResponse<Object>> constraintViolationException(ConstraintViolationException exception) {
@@ -28,8 +35,9 @@ public class ErrorController {
             errors.put(fieldName, message);
         }
         
+        Locale locale = LocaleContextHolder.getLocale();
         WebResponse<Object> response = WebResponse.builder()
-            .message("Validation failed")
+            .message(messageSource.getMessage("validation.fail", null, locale))
             .errors(errors)
             .build();
         
