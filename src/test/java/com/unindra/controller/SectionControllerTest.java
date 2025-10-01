@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -26,6 +27,7 @@ import com.unindra.entity.Classroom;
 import com.unindra.entity.Department;
 import com.unindra.entity.Section;
 import com.unindra.entity.Staff;
+import com.unindra.model.request.SectionRequest;
 import com.unindra.model.response.SectionResponse;
 import com.unindra.model.response.TokenResponse;
 import com.unindra.model.response.WebResponse;
@@ -40,7 +42,7 @@ import com.unindra.util.JwtUtil;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class SectionControllerTest {
-    
+
     @Autowired
     private SectionRepository repository;
 
@@ -84,12 +86,12 @@ public class SectionControllerTest {
             Section section = new Section();
 
             section.setClassroom(c);
-            section.setName((char) i);
-            section.setCode(String.format("%s %s", c.getCode(), (char)i));
+            char name = (char) ('A' + i);
+            section.setName(name);
+            section.setCode(String.format("%s %c", c.getCode(), name));
 
             repository.save(section);
         }
-        
 
         staffRepository.deleteAll();
 
@@ -101,11 +103,10 @@ public class SectionControllerTest {
 
         staffRepository.save(staff);
     }
-    
 
     @Test
     public void getAllSuccess() throws Exception {
-        
+
         Staff staff = staffRepository.findByUsername("zahra").orElse(null);
         TokenResponse token = jwtUtil.generateToken(staff);
 
@@ -126,13 +127,13 @@ public class SectionControllerTest {
                     assertNull(response.getErrors());
                     assertNotNull(response.getData());
                     assertEquals(response.getData().size(), 10);
-                    
+
                 });
     }
 
     @Test
     public void getAllFailValidation() throws Exception {
-        
+
         String token = UUID.randomUUID().toString();
 
         mockMvc.perform(
@@ -147,6 +148,63 @@ public class SectionControllerTest {
                     String response = result.getResponse().getContentAsString();
 
                     assertNotNull(response);
+                });
+    }
+
+    @Test
+    public void createdSuccess() throws Exception {
+
+        Staff staff = staffRepository.findByUsername("zahra").orElse(null);
+        TokenResponse token = jwtUtil.generateToken(staff);
+
+        SectionRequest request = SectionRequest.builder()
+                .departmentName("Materi Ilmu Pengetahuan Alam")
+                .classroomName("10")
+                .build();
+
+        mockMvc.perform(
+                post("/api/sections")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken())
+                        .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpectAll(
+                        status().isOk())
+                .andDo(result -> {
+                    WebResponse<List<String>> response = objectMapper.readValue(
+                            result.getResponse().getContentAsString(),
+                            new TypeReference<WebResponse<List<String>>>() {
+                            });
+
+                    assertNull(response.getErrors());
+
+                });
+    }
+
+    @Test
+    public void createdFailUnathorized() throws Exception {
+
+        String token = UUID.randomUUID().toString();
+
+        SectionRequest request = SectionRequest.builder()
+                .departmentName("Materi Ilmu Pengetahuan Alam")
+                .classroomName("10")
+                .build();
+
+        mockMvc.perform(
+                post("/api/sections")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpectAll(
+                        status().isUnauthorized())
+                .andDo(result -> {
+                    String responseBody = result.getResponse().getContentAsString();
+                    
+                    assertNotNull(responseBody);
                 });
     }
 }
