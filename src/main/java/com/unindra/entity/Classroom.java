@@ -2,6 +2,7 @@ package com.unindra.entity;
 
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -34,14 +35,13 @@ public class Classroom {
     @JoinColumn(name = "department_id")
     private Department department;
 
-    @OneToMany(mappedBy = "classroom")
+    @OneToMany(mappedBy = "classroom", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Section> sections;
 
-    @OneToMany(mappedBy = "classroom")
+    @OneToMany(mappedBy = "classroom", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Course> courses;
 
-    @OneToMany
-    @JoinColumn(name = "paymentDetails")
+    @OneToMany(mappedBy = "classroom", cascade = CascadeType.ALL, orphanRemoval= true)
     private List<PaymentDetail> paymentDetails;
     
 }
