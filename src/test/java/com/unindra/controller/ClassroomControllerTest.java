@@ -1,13 +1,16 @@
 package com.unindra.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.unindra.entity.Classroom;
 import com.unindra.entity.Department;
 import com.unindra.entity.Staff;
+import com.unindra.model.request.ClassroomRequest;
 import com.unindra.model.response.ClassroomResponse;
 import com.unindra.model.response.TokenResponse;
 import com.unindra.model.response.WebResponse;
@@ -59,6 +63,7 @@ public class ClassroomControllerTest {
     @BeforeEach
     void setUp() {
         repository.deleteAll();
+        departmentRepository.deleteAll();
         staffRepository.deleteAll();
 
         Department d = new Department();
@@ -81,15 +86,8 @@ public class ClassroomControllerTest {
         Staff staff = new Staff();
 
         staff.setName("Zahra Hanifa");
-        // staff.setGender(Gender.FEMALE);
-        // staff.setBirthDate(LocalDate.of(2003, 4, 14));
-        // staff.setBirthplace(regency);
-        // staff.setDistrictAddress(district);
-        // staff.setAddress("Kp. Jatiasih no 96");
         staff.setUsername("zahra");
         staff.setPassword(BCrypt.hashpw("rahasia", BCrypt.gensalt()));
-        // staff.setEmail("zahra@gmail.com");
-        // staff.setPhoneNumber("0831341341");
 
         staffRepository.save(staff);
     }
@@ -111,15 +109,110 @@ public class ClassroomControllerTest {
                 .andDo(result -> {
                     WebResponse<List<ClassroomResponse>> response = objectMapper.readValue(
                             result.getResponse().getContentAsString(),
-                            new TypeReference<WebResponse<List<ClassroomResponse>>>(){});
+                            new TypeReference<WebResponse<List<ClassroomResponse>>>() {
+                            });
 
-                            assertNull(response.getErrors());
-                            assertNotNull(response.getData());
-                            assertEquals(response.getData().size(), 3);
+                    assertNull(response.getErrors());
+                    assertNotNull(response.getData());
+                    assertEquals(response.getData().size(), 3);
                 });
 
-            assertTrue(repository.existsByCode("MIPA10"));
-            assertTrue(repository.existsByCode("MIPA11"));
-            assertTrue(repository.existsByCode("MIPA12"));
+        assertTrue(repository.existsByCode("MIPA10"));
+        assertTrue(repository.existsByCode("MIPA11"));
+        assertTrue(repository.existsByCode("MIPA12"));
+    }
+
+    @Test
+    public void createdSuccess() throws Exception {
+        repository.deleteAll();
+
+        Staff staff = staffRepository.findByUsername("zahra").orElse(null);
+
+        TokenResponse token = jwtUtil.generateToken(staff);
+        ClassroomRequest classroomRequest = ClassroomRequest.builder()
+                .departmentName("Materi Ilmu Pengetahuan Alam")
+                .classroomName("10")
+                .code("MIPA10")
+                .build();
+
+        mockMvc.perform(
+                post("/api/classrooms")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken())
+                        .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+                        .content(objectMapper.writeValueAsString(classroomRequest)))
+                .andExpectAll(
+                        status().isOk())
+                .andDo(result -> {
+                    WebResponse<String> response = objectMapper.readValue(
+                            result.getResponse().getContentAsString(),
+                            new TypeReference<WebResponse<String>>() {
+                            });
+
+                    assertNull(response.getErrors());
+                });
+
+        assertTrue(repository.existsByCode("MIPA10"));
+    }
+
+    @Test
+    public void createdFailValidation() throws Exception {
+        repository.deleteAll();
+
+        Staff staff = staffRepository.findByUsername("zahra").orElse(null);
+
+        TokenResponse token = jwtUtil.generateToken(staff);
+        ClassroomRequest classroomRequest = ClassroomRequest.builder()
+                .departmentName("")
+                .classroomName("")
+                .code("")
+                .build();
+
+        mockMvc.perform(
+                post("/api/classrooms")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken())
+                        .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+                        .content(objectMapper.writeValueAsString(classroomRequest)))
+                .andExpectAll(
+                        status().isBadRequest())
+                .andDo(result -> {
+                    WebResponse<String> response = objectMapper.readValue(
+                            result.getResponse().getContentAsString(),
+                            new TypeReference<WebResponse<String>>() {
+                            });
+
+                    assertNotNull(response.getErrors());
+                });
+
+        assertFalse(repository.existsByCode("MIPA10"));
+    }
+
+    @Test
+    public void createdFailUnauth() throws Exception {
+        repository.deleteAll();
+
+        String token = UUID.randomUUID().toString();
+        ClassroomRequest classroomRequest = ClassroomRequest.builder()
+                .departmentName("Materi Ilmu Pengetahuan Alam")
+                .classroomName("10")
+                .code("MIPA10")
+                .build();
+
+        mockMvc.perform(
+                post("/api/classrooms")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+                        .content(objectMapper.writeValueAsString(classroomRequest)))
+                .andExpectAll(
+                        status().isUnauthorized())
+                .andDo(result -> {
+                    String responseBody = result.getResponse().getContentAsString();
+                    assertNotNull(responseBody);
+                });
     }
 }

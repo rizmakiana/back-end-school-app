@@ -111,6 +111,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public Optional<Department> findByName(String name) {
+        System.out.println(repository.existsByName(name));
         return repository.findByName(name);
     }
 

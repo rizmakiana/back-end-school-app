@@ -7,9 +7,12 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.unindra.model.request.ClassroomRequest;
 import com.unindra.model.response.ClassroomResponse;
 import com.unindra.model.response.WebResponse;
 import com.unindra.service.ClassroomService;
@@ -30,8 +33,20 @@ public class ClassroomController {
         return ResponseEntity.ok(
                 WebResponse.<List<ClassroomResponse>>builder()
                         .data(service.getAll())
-                        .message(source.getMessage("classroom.created", null, locale))
                         .build());
 
+    }
+
+    @PostMapping
+    public ResponseEntity<WebResponse<String>> create(
+            @RequestBody ClassroomRequest request,
+            Authentication authentication,
+            Locale locale) {
+
+        service.add(request, locale);
+        return ResponseEntity.ok(
+                WebResponse.<String>builder()
+                        .message(source.getMessage("classroom.created", null, locale))
+                        .build());
     }
 }
