@@ -61,9 +61,15 @@ public class ClassroomServiceImpl implements ClassroomService {
     }
 
     @Override
-    public void delete(String id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'delete'");
+    public void delete(String id, Locale locale) {
+        Classroom classroom = repository.findById(id)
+                    .orElseThrow(() -> ExceptionUtil.notFound("classroom.notfound", locale));
+
+        if (!classroom.getSections().isEmpty()) {
+            throw ExceptionUtil.badRequest("cant.delete.classroom", locale);
+        }
+
+        repository.delete(classroom);
     }
 
 }

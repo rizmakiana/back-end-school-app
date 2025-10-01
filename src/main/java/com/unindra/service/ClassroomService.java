@@ -12,6 +12,6 @@ public interface ClassroomService {
 
     void add(ClassroomRequest request, Locale locale);
 
-    void delete(String id);
+    void delete(String id, Locale locale);
 
 }
