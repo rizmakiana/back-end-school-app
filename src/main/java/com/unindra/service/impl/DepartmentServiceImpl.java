@@ -32,7 +32,7 @@ public class DepartmentServiceImpl implements DepartmentService {
                         .id(department.getId())
                         .name(department.getName())
                         .code(department.getCode())
-                        .totalClassroom(String.valueOf(department.getClassrooms().size()))
+                        .totalClassroom(department.getClassrooms().size())
                         .build())
                 .toList();
     }
