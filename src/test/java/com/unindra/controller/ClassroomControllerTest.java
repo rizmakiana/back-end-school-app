@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -215,4 +216,33 @@ public class ClassroomControllerTest {
                     assertNotNull(responseBody);
                 });
     }
+
+    @Test
+    public void deleteSucces() throws Exception {
+        
+        Staff staff = staffRepository.findByUsername("zahra").orElse(null);
+
+        TokenResponse token = jwtUtil.generateToken(staff);
+
+        Department dept = departmentRepository.findByName("Materi Ilmu Pengetahuan alam").orElse(null);
+        Classroom classroom = repository.findByDepartmentAndName(dept, "10").orElse(null);
+        mockMvc.perform(
+                delete("/api/classrooms/" + classroom.getId())
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken())
+                        .header(HttpHeaders.ACCEPT_LANGUAGE, "en"))
+                .andExpectAll(
+                        status().isOk())
+                .andDo(result -> {
+                    WebResponse<String> response = objectMapper.readValue(
+                            result.getResponse().getContentAsString(),
+                            new TypeReference<WebResponse<String>>() {
+                            });
+
+                    assertNull(response.getErrors());
+                });
+        assertFalse(repository.existsByDepartmentAndName(dept, "10"));
+    }
 }
+ 
