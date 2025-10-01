@@ -4,11 +4,17 @@ import java.util.List;
 import java.util.Locale;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.unindra.entity.Classroom;
+import com.unindra.entity.Department;
 import com.unindra.model.request.ClassroomRequest;
 import com.unindra.model.response.ClassroomResponse;
 import com.unindra.repository.ClassroomRepository;
 import com.unindra.service.ClassroomService;
+import com.unindra.service.DepartmentService;
+import com.unindra.service.ValidationService;
+import com.unindra.util.ExceptionUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,6 +23,10 @@ import lombok.RequiredArgsConstructor;
 public class ClassroomServiceImpl implements ClassroomService {
 
     private final ClassroomRepository repository;
+
+    private final ValidationService validationService;
+
+    private final DepartmentService departmentService;
 
     @Override
     public List<ClassroomResponse> getAll() {
@@ -31,9 +41,23 @@ public class ClassroomServiceImpl implements ClassroomService {
     }
 
     @Override
+    @Transactional
     public void add(ClassroomRequest request, Locale locale) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'add'");
+        validationService.validate(request);
+
+        Department d = departmentService.findByName(request.getDepartmentName())
+                .orElseThrow(() -> ExceptionUtil.badRequest("department.notfound", locale));
+
+        if (repository.existsByDepartmentAndName(d, request.getClassroomName())) {
+            throw ExceptionUtil.badRequest("classroom.already.exists", locale);
+        }
+
+        Classroom classroom = new Classroom();
+        classroom.setDepartment(d);
+        classroom.setName(request.getClassroomName());
+        classroom.setCode(d.getCode() + request.getClassroomName());
+
+        repository.save(classroom);
     }
 
     @Override

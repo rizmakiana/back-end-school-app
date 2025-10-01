@@ -2,7 +2,9 @@ package com.unindra.service;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
+import com.unindra.entity.Department;
 import com.unindra.model.request.DepartmentRequest;
 import com.unindra.model.response.DepartmentResponse;
 
@@ -16,4 +18,5 @@ public interface DepartmentService {
 
     void delete(String id, Locale locale);
 
+    Optional<Department> findByName(String name);
 }

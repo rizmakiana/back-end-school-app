@@ -2,6 +2,7 @@ package com.unindra.service.impl;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -106,6 +107,11 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         return repository.existsByCode(code);
 
+    }
+
+    @Override
+    public Optional<Department> findByName(String name) {
+        return repository.findByName(name);
     }
 
 }
