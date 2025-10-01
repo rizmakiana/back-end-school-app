@@ -28,7 +28,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.unindra.entity.Classroom;
 import com.unindra.entity.Department;
 import com.unindra.entity.District;
 import com.unindra.entity.Regency;

@@ -5,7 +5,10 @@ import org.springframework.stereotype.Repository;
 
 import com.unindra.entity.Classroom;
 
+
 @Repository
 public interface ClassroomRepository extends JpaRepository<Classroom, String>{
+
+    boolean existsByCode(String code);
     
 }

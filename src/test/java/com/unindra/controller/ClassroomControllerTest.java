@@ -1,0 +1,125 @@
+package com.unindra.controller;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.unindra.entity.Classroom;
+import com.unindra.entity.Department;
+import com.unindra.entity.Staff;
+import com.unindra.model.response.ClassroomResponse;
+import com.unindra.model.response.TokenResponse;
+import com.unindra.model.response.WebResponse;
+import com.unindra.repository.ClassroomRepository;
+import com.unindra.repository.DepartmentRepository;
+import com.unindra.repository.StaffRepository;
+import com.unindra.security.BCrypt;
+import com.unindra.util.JwtUtil;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+public class ClassroomControllerTest {
+
+    @Autowired
+    private ClassroomRepository repository;
+
+    @Autowired
+    private DepartmentRepository departmentRepository;
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private StaffRepository staffRepository;
+
+    @BeforeEach
+    void setUp() {
+        repository.deleteAll();
+        staffRepository.deleteAll();
+
+        Department d = new Department();
+        d.setName("Materi Ilmu Pengetahuan Alam");
+        d.setCode("MIPA");
+        departmentRepository.save(d);
+
+        for (int i = 10; i < 13; i++) {
+            Classroom c = new Classroom();
+
+            c.setDepartment(d);
+            c.setName(String.valueOf(i));
+            c.setCode(d.getCode() + c.getName());
+
+            repository.save(c);
+        }
+
+        staffRepository.deleteAll();
+
+        Staff staff = new Staff();
+
+        staff.setName("Zahra Hanifa");
+        // staff.setGender(Gender.FEMALE);
+        // staff.setBirthDate(LocalDate.of(2003, 4, 14));
+        // staff.setBirthplace(regency);
+        // staff.setDistrictAddress(district);
+        // staff.setAddress("Kp. Jatiasih no 96");
+        staff.setUsername("zahra");
+        staff.setPassword(BCrypt.hashpw("rahasia", BCrypt.gensalt()));
+        // staff.setEmail("zahra@gmail.com");
+        // staff.setPhoneNumber("0831341341");
+
+        staffRepository.save(staff);
+    }
+
+    @Test
+    public void getAllSuccess() throws Exception {
+        Staff staff = staffRepository.findByUsername("zahra").orElse(null);
+
+        TokenResponse token = jwtUtil.generateToken(staff);
+
+        mockMvc.perform(
+                get("/api/classrooms")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken())
+                        .header(HttpHeaders.ACCEPT_LANGUAGE, "en"))
+                .andExpectAll(
+                        status().isOk())
+                .andDo(result -> {
+                    WebResponse<List<ClassroomResponse>> response = objectMapper.readValue(
+                            result.getResponse().getContentAsString(),
+                            new TypeReference<WebResponse<List<ClassroomResponse>>>(){});
+
+                            assertNull(response.getErrors());
+                            assertNotNull(response.getData());
+                            assertEquals(response.getData().size(), 3);
+                });
+
+            assertTrue(repository.existsByCode("MIPA10"));
+            assertTrue(repository.existsByCode("MIPA11"));
+            assertTrue(repository.existsByCode("MIPA12"));
+    }
+}
