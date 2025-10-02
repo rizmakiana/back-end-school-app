@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
@@ -31,6 +32,7 @@ import com.unindra.entity.Department;
 import com.unindra.entity.Section;
 import com.unindra.entity.Staff;
 import com.unindra.model.request.SectionRequest;
+import com.unindra.model.request.SectionUpdateRequest;
 import com.unindra.model.response.SectionResponse;
 import com.unindra.model.response.TokenResponse;
 import com.unindra.model.response.WebResponse;
@@ -236,6 +238,76 @@ public class SectionControllerTest {
 
                 });
         assertFalse(repository.existsByCode("MIPA10 A"));
+
+    }
+
+    @Test
+    public void testUpdateSucces() throws JsonProcessingException, Exception {
+        
+        Staff staff = staffRepository.findByUsername("zahra").orElse(null);
+        TokenResponse token = jwtUtil.generateToken(staff);
+
+        Section section = repository.findByCode("MIPA10 A").orElse(null);
+        SectionUpdateRequest request = SectionUpdateRequest.builder()
+                .code("Z")
+                .build();
+
+        mockMvc.perform(
+                patch("/api/sections/" + section.getId())
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken())
+                        .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpectAll(
+                        status().isOk())
+                .andDo(result -> {
+                    WebResponse<List<String>> response = objectMapper.readValue(
+                            result.getResponse().getContentAsString(),
+                            new TypeReference<WebResponse<List<String>>>() {
+                            });
+
+                    assertNull(response.getErrors());
+
+                });
+                
+        assertFalse(repository.existsByCode("MIPA10 A"));
+        assertTrue(repository.existsByCode("MIPA10 Z"));
+
+    }
+
+    @Test
+    public void testUpdateFailAlreadyExists() throws JsonProcessingException, Exception {
+        
+        Staff staff = staffRepository.findByUsername("zahra").orElse(null);
+        TokenResponse token = jwtUtil.generateToken(staff);
+
+        Section section = repository.findByCode("MIPA10 A").orElse(null);
+        SectionUpdateRequest request = SectionUpdateRequest.builder()
+                .code("B")
+                .build();
+
+        mockMvc.perform(
+                patch("/api/sections/" + section.getId())
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken())
+                        .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpectAll(
+                        status().isBadRequest())
+                .andDo(result -> {
+                    WebResponse<List<String>> response = objectMapper.readValue(
+                            result.getResponse().getContentAsString(),
+                            new TypeReference<WebResponse<List<String>>>() {
+                            });
+
+                    assertNotNull(response.getErrors());
+
+                });
+                
+        assertTrue(repository.existsByCode("MIPA10 A"));
+        assertFalse(repository.existsByCode("MIPA10 Z"));
 
     }
 }
