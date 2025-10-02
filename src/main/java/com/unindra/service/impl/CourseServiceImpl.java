@@ -11,6 +11,7 @@ import com.unindra.entity.Course;
 import com.unindra.entity.Department;
 import com.unindra.model.request.CourseRequest;
 import com.unindra.model.request.CourseResponse;
+import com.unindra.model.request.CourseUpdateRequest;
 import com.unindra.repository.CourseRepository;
 import com.unindra.service.CourseService;
 import com.unindra.service.DepartmentService;
@@ -69,16 +70,42 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public void update(String id, CourseRequest request, Locale locale) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'update'");
+    @Transactional
+    public void update(String id, CourseUpdateRequest request, Locale locale) {
+        validationService.validate(request);
+
+        Course course = repository.findById(id)
+                .orElseThrow(() -> ExceptionUtil.badRequest("course.notfound", locale));
+
+        Classroom classroom = course.getClassroom();
+
+        // cek duplikat nama (exclude course yang sedang diupdate)
+        repository.findByClassroomAndName(classroom, request.getName())
+                .ifPresent(existing -> {
+                    if (!existing.getId().equals(course.getId())) {
+                        throw ExceptionUtil.badRequest("course.name.already.exists", locale);
+                    }
+                });
+
+        // cek duplikat kode (exclude course yang sedang diupdate)
+        repository.findByClassroomAndCode(classroom, request.getCode())
+                .ifPresent(existing -> {
+                    if (!existing.getId().equals(course.getId())) {
+                        throw ExceptionUtil.badRequest("course.code.already.exists", locale);
+                    }
+                });
+
+        course.setName(request.getName());
+        course.setCode(request.getCode());
+
+        repository.save(course);
     }
 
     @Override
     public void delete(String id, Locale locale) {
         Course course = repository.findById(id)
-            .orElseThrow(() -> ExceptionUtil.badRequest("course.notfound", locale));
-        
+                .orElseThrow(() -> ExceptionUtil.badRequest("course.notfound", locale));
+
         repository.delete(course);
     }
 
@@ -98,7 +125,6 @@ public class CourseServiceImpl implements CourseService {
         // example format code: MIPA10-1, MIPA10-2, MIPA10-3
         return String.format("%s%s-%d", department.getCode(), classroom.getName(), classroom.getCourses().size() + 1);
     }
-
 
     private String generateCode(Department department, Classroom classroom, long currentCount) {
         // contoh: MIPA10-1, MIPA10-2, dst.

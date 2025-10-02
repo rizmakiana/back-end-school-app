@@ -5,6 +5,8 @@ import org.springframework.stereotype.Repository;
 
 import com.unindra.entity.Course;
 import java.util.List;
+import java.util.Optional;
+
 import com.unindra.entity.Classroom;
 
 
@@ -16,5 +18,9 @@ public interface CourseRepository extends JpaRepository<Course, String>{
     long countByClassroom(Classroom classroom);
 
     boolean existsByClassroomAndName(Classroom classroom, String name);
+
+    Optional<Course> findByClassroomAndName(Classroom classroom, String name);
+    
+    Optional<Course> findByClassroomAndCode(Classroom classroom, String code);
 
 }

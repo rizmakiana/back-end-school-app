@@ -5,6 +5,7 @@ import java.util.Locale;
 
 import com.unindra.model.request.CourseRequest;
 import com.unindra.model.request.CourseResponse;
+import com.unindra.model.request.CourseUpdateRequest;
 
 public interface CourseService {
 
@@ -12,7 +13,7 @@ public interface CourseService {
     
     void add(CourseRequest request, Locale locale);
 
-    void update(String id, CourseRequest request, Locale locale);
+    void update(String id, CourseUpdateRequest request, Locale locale);
 
     void delete(String id, Locale locale);
 }
