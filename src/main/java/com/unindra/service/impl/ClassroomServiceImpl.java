@@ -78,4 +78,9 @@ public class ClassroomServiceImpl implements ClassroomService {
         return repository.findByDepartmentAndName(department, name);
     }
 
+    @Override
+    public void save(Classroom classroom) {
+        repository.save(classroom);
+    }
+
 }

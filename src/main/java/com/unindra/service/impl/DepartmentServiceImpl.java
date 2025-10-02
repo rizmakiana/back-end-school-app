@@ -7,7 +7,9 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.unindra.entity.Classroom;
 import com.unindra.entity.Department;
+import com.unindra.entity.Section;
 import com.unindra.model.request.DepartmentRequest;
 import com.unindra.model.response.DepartmentResponse;
 import com.unindra.repository.DepartmentRepository;
@@ -58,6 +60,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
+    @Transactional
     public void update(String id, DepartmentRequest request, Locale locale) {
         validationService.validate(request);
 
@@ -81,6 +84,21 @@ public class DepartmentServiceImpl implements DepartmentService {
         // Update data
         departmentTarget.setName(request.getName());
         departmentTarget.setCode(request.getCode());
+
+        if (!departmentTarget.getClassrooms().isEmpty()) {
+            for (Classroom classroom : departmentTarget.getClassrooms()) {
+                String newClassroomCode = request.getCode() + classroom.getName();
+                classroom.setCode(newClassroomCode);
+
+                if (!classroom.getSections().isEmpty()) {
+                    for (Section section : classroom.getSections()) {
+                        String newSectionCode = newClassroomCode + " " + section.getName();
+                        section.setCode(newSectionCode);
+                    }
+                }
+            }
+
+        }
 
         repository.save(departmentTarget);
     }

@@ -121,4 +121,9 @@ public class SectionServiceImpl implements SectionService {
         return (char) (last + 1); // next huruf
     }
 
+    @Override
+    public void save(Section section) {
+        repository.save(section);
+    }
+
 }

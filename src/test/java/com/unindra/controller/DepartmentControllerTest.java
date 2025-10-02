@@ -37,9 +37,11 @@ import com.unindra.model.response.DepartmentResponse;
 import com.unindra.model.response.TokenResponse;
 import com.unindra.model.response.WebResponse;
 import com.unindra.model.util.Gender;
+import com.unindra.repository.ClassroomRepository;
 import com.unindra.repository.DepartmentRepository;
 import com.unindra.repository.DistrictRepository;
 import com.unindra.repository.RegencyRepository;
+import com.unindra.repository.SectionRepository;
 import com.unindra.repository.StaffRepository;
 import com.unindra.security.BCrypt;
 import com.unindra.util.JwtUtil;
@@ -70,8 +72,16 @@ public class DepartmentControllerTest {
         @Autowired
         private DistrictRepository districtRepository;
 
+        @Autowired
+        private ClassroomRepository classroomRepository;
+
+        @Autowired
+        private SectionRepository sectionRepository;
+
         @BeforeEach
         public void setup() {
+                sectionRepository.deleteAll();
+                classroomRepository.deleteAll();
                 repository.deleteAll();
                 staffRepository.deleteAll();
 

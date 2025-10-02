@@ -18,5 +18,7 @@ public interface ClassroomService {
     void delete(String id, Locale locale);
 
     Optional<Classroom> findByDepartmentAndName(Department department, String name);
+
+    void save(Classroom classroom);
     
 }
