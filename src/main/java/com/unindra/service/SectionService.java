@@ -14,6 +14,6 @@ public interface SectionService {
 
     void update(String id, SectionRequest request, Locale locale);
 
-    void delete(String id);
+    void delete(String id, Locale locale);
     
 }

@@ -73,9 +73,15 @@ public class SectionServiceImpl implements SectionService {
     }
 
     @Override
-    public void delete(String id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'delete'");
+    public void delete(String id, Locale locale) {
+        Section section = repository.findById(id)
+            .orElseThrow(() -> ExceptionUtil.notFound("section.notfound", locale));
+
+        if (!section.getStudents().isEmpty()) {
+            throw ExceptionUtil.badRequest("section.cant.deleted", locale);
+        }
+
+        repository.delete(section);
     }
 
     @Transactional(readOnly = true)

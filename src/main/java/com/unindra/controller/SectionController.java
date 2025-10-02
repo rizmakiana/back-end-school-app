@@ -6,7 +6,9 @@ import java.util.Locale;
 import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,17 +39,26 @@ public class SectionController {
 
     @PostMapping
     public ResponseEntity<WebResponse<String>> add(
-        Authentication authentication,
-        @RequestBody SectionRequest request,
-        Locale locale
-    ) {
-        
+            Authentication authentication,
+            @RequestBody SectionRequest request,
+            Locale locale) {
+
         service.add(request, locale);
         return ResponseEntity.ok(
-            WebResponse.<String>builder()
-                .message(source.getMessage("section.created", null, locale))
-                .build()
-        );
+                WebResponse.<String>builder()
+                        .message(source.getMessage("section.created", null, locale))
+                        .build());
+    }
+
+    @DeleteMapping(path = "/{id}")
+    public ResponseEntity<WebResponse<String>> delete(
+            Authentication authentication,
+            @PathVariable String id,
+            Locale locale) {
+        service.delete(id, locale);
+        return ResponseEntity.ok(
+                WebResponse.<String>builder()
+                        .message(source.getMessage("section.deleted", null, locale)).build());
     }
 
 }
