@@ -2,6 +2,7 @@ package com.unindra.entity;
 
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -34,7 +35,7 @@ public class Course {
     @JoinColumn(name = "classroom_id")
     private Classroom classroom;
     
-    @OneToMany(mappedBy = "course")
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TeachingAssignment> teachingAssignments;
     
 }

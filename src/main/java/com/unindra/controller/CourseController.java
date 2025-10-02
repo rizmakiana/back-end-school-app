@@ -6,7 +6,9 @@ import java.util.Locale;
 import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.unindra.model.request.CourseRequest;
 import com.unindra.model.request.CourseResponse;
 import com.unindra.model.response.WebResponse;
+import com.unindra.model.response.WebResponse.WebResponseBuilder;
 import com.unindra.service.CourseService;
 
 import lombok.RequiredArgsConstructor;
@@ -41,10 +44,22 @@ public class CourseController {
             Authentication authentication,
             @RequestBody CourseRequest request,
             Locale locale) {
+        service.add(request, locale);
         return ResponseEntity.ok(
                 WebResponse.<String>builder()
                         .message(source.getMessage("course.created", null, locale))
                         .build());
 
+    }
+
+    @DeleteMapping(path = "/{id}")
+    public ResponseEntity<WebResponseBuilder<String>> delete(
+            Authentication authentication,
+            @PathVariable String id,
+            Locale locale) {
+        service.delete(id, locale);
+        return ResponseEntity.ok(
+                WebResponse.<String>builder()
+                        .message(source.getMessage("course.deleted", null, locale)));
     }
 }

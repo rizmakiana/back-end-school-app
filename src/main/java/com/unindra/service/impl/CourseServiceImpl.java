@@ -53,7 +53,7 @@ public class CourseServiceImpl implements CourseService {
 
         // cek apakah course dengan nama sama sudah ada di classroom
         if (repository.existsByClassroomAndName(classroom, request.getName())) {
-            throw ExceptionUtil.badRequest("course.already.exists", locale);
+            throw ExceptionUtil.badRequest("course.name.already.exists", locale);
         }
 
         // hitung jumlah course di classroom untuk generate code
@@ -68,14 +68,6 @@ public class CourseServiceImpl implements CourseService {
         repository.save(course);
     }
 
-    private String generateCode(Department department, Classroom classroom, long currentCount) {
-        // contoh: MIPA10-1, MIPA10-2, dst.
-        return String.format("%s%s-%d",
-                department.getCode(),
-                classroom.getName(),
-                currentCount + 1);
-    }
-
     @Override
     public void update(String id, CourseRequest request, Locale locale) {
         // TODO Auto-generated method stub
@@ -84,8 +76,10 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public void delete(String id, Locale locale) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'delete'");
+        Course course = repository.findById(id)
+            .orElseThrow(() -> ExceptionUtil.badRequest("course.notfound", locale));
+        
+        repository.delete(course);
     }
 
     @Transactional(readOnly = true)
@@ -103,5 +97,14 @@ public class CourseServiceImpl implements CourseService {
     public String generateCode(Department department, Classroom classroom) {
         // example format code: MIPA10-1, MIPA10-2, MIPA10-3
         return String.format("%s%s-%d", department.getCode(), classroom.getName(), classroom.getCourses().size() + 1);
+    }
+
+
+    private String generateCode(Department department, Classroom classroom, long currentCount) {
+        // contoh: MIPA10-1, MIPA10-2, dst.
+        return String.format("%s%s-%d",
+                department.getCode(),
+                classroom.getName(),
+                currentCount + 1);
     }
 }
