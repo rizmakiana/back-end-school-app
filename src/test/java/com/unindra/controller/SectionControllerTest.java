@@ -1,10 +1,12 @@
 package com.unindra.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -21,6 +23,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.unindra.entity.Classroom;
@@ -206,5 +209,33 @@ public class SectionControllerTest {
                     
                     assertNotNull(responseBody);
                 });
+    }
+
+    @Test
+    public void testDeleteSucces() throws JsonProcessingException, Exception {
+        
+        Staff staff = staffRepository.findByUsername("zahra").orElse(null);
+        TokenResponse token = jwtUtil.generateToken(staff);
+
+        Section section = repository.findByCode("MIPA10 A").orElse(null);
+        mockMvc.perform(
+                delete("/api/sections/" + section.getId())
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken())
+                        .header(HttpHeaders.ACCEPT_LANGUAGE, "en"))
+                .andExpectAll(
+                        status().isOk())
+                .andDo(result -> {
+                    WebResponse<List<String>> response = objectMapper.readValue(
+                            result.getResponse().getContentAsString(),
+                            new TypeReference<WebResponse<List<String>>>() {
+                            });
+
+                    assertNull(response.getErrors());
+
+                });
+        assertFalse(repository.existsByCode("MIPA10 A"));
+
     }
 }
