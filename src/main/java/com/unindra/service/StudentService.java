@@ -12,7 +12,7 @@ public interface StudentService {
 
     void add(StudentRequest request, Locale Locale);
     
-    void update(StudentRequest request, Locale Locale);
+    void update(String id, StudentRequest request, Locale Locale);
 
     void delete(String id, Locale locale);
 
