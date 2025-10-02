@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Locale;
 
 import com.unindra.model.request.SectionRequest;
+import com.unindra.model.request.SectionUpdateRequest;
 import com.unindra.model.response.SectionResponse;
 
 public interface SectionService {
@@ -12,7 +13,7 @@ public interface SectionService {
 
     void add(SectionRequest request, Locale locale);
 
-    void update(String id, SectionRequest request, Locale locale);
+    void update(String id, SectionUpdateRequest request, Locale locale);
 
     void delete(String id, Locale locale);
     

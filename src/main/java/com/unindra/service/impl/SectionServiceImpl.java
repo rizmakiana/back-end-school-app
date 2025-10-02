@@ -10,6 +10,7 @@ import com.unindra.entity.Classroom;
 import com.unindra.entity.Department;
 import com.unindra.entity.Section;
 import com.unindra.model.request.SectionRequest;
+import com.unindra.model.request.SectionUpdateRequest;
 import com.unindra.model.response.SectionResponse;
 import com.unindra.repository.SectionRepository;
 import com.unindra.service.ClassroomService;
@@ -67,15 +68,34 @@ public class SectionServiceImpl implements SectionService {
     }
 
     @Override
-    public void update(String id, SectionRequest request, Locale locale) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'update'");
+    public void update(String id, SectionUpdateRequest request, Locale locale) {
+        validationService.validate(request);
+
+        Section section = repository.findById(id)
+                .orElseThrow(() -> ExceptionUtil.notFound("section.notfound", locale));
+
+        // contoh: "MIPA10 A"
+        String oldCode = section.getCode();
+
+        // ambil prefix sebelum spasi terakhir → "MIPA10"
+        String prefix = oldCode.substring(0, oldCode.lastIndexOf(" "));
+
+        // gabung prefix dengan code baru dari request → "MIPA10 B"
+        String name = prefix + " " + request.getCode();
+
+        if (repository.existsByCode(name)) {
+            throw ExceptionUtil.badRequest("section.already.exists", locale);
+        }
+
+        section.setName(request.getCode().charAt(0));
+        section.setCode(name);
+        repository.save(section);
     }
 
     @Override
     public void delete(String id, Locale locale) {
         Section section = repository.findById(id)
-            .orElseThrow(() -> ExceptionUtil.notFound("section.notfound", locale));
+                .orElseThrow(() -> ExceptionUtil.notFound("section.notfound", locale));
 
         if (!section.getStudents().isEmpty()) {
             throw ExceptionUtil.badRequest("section.cant.deleted", locale);
