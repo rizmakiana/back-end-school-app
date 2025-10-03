@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,8 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.unindra.model.request.StudentRequest;
+import com.unindra.model.request.StudentUpdate;
 import com.unindra.model.response.StudentResponse;
 import com.unindra.model.response.WebResponse;
+import com.unindra.model.response.WebResponse.WebResponseBuilder;
 import com.unindra.service.StudentService;
 
 import lombok.RequiredArgsConstructor;
@@ -60,5 +63,20 @@ public class StudentController {
                 WebResponse.<String>builder()
                         .message(source.getMessage("student.registered", null, locale))
                         .build());
+    }
+
+
+    @PatchMapping(path = "/staff/students/{id}")
+    public ResponseEntity<WebResponseBuilder<String>> updateByStaff(
+        Authentication authentication,
+        @PathVariable String id,
+        @RequestBody StudentUpdate request,
+        Locale locale
+    ) {
+        service.update(id, request, locale);
+        return ResponseEntity.ok(
+            WebResponse.<String>builder()
+                .message(source.getMessage("student.updated", null, locale))
+        );
     }
 }

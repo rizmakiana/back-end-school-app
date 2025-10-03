@@ -15,6 +15,7 @@ import com.unindra.entity.Regency;
 import com.unindra.entity.Section;
 import com.unindra.entity.Student;
 import com.unindra.model.request.StudentRequest;
+import com.unindra.model.request.StudentUpdate;
 import com.unindra.model.response.StudentResponse;
 import com.unindra.repository.StudentRepository;
 import com.unindra.security.BCrypt;
@@ -77,7 +78,7 @@ public class StudentServiceImpl implements StudentService {
         if (existsByUsername(request.getUsername())) {
             throw ExceptionUtil.badRequest("username.already.exists", locale);
         }
-        
+
         if (existsByEmail(request.getEmail())) {
             throw ExceptionUtil.badRequest("email.already.exists", locale);
         }
@@ -87,16 +88,15 @@ public class StudentServiceImpl implements StudentService {
         }
 
         Department department = departmentService.findByName(request.getDepartmentName())
-            .orElseThrow(() -> ExceptionUtil.badRequest("department.notfound", locale));
+                .orElseThrow(() -> ExceptionUtil.badRequest("department.notfound", locale));
 
         Classroom classroom = department.getClassrooms().stream()
-            .filter(c -> c.getName().contains("10"))
-            .findFirst()
-            .orElseThrow(() -> ExceptionUtil.badRequest("classroom.10.notfound", locale));
+                .filter(c -> c.getName().contains("10"))
+                .findFirst()
+                .orElseThrow(() -> ExceptionUtil.badRequest("classroom.10.notfound", locale));
 
-    
         Section section = classroom.getSections().stream().findFirst()
-            .orElseThrow(() -> ExceptionUtil.badRequest("section.notfound", locale));
+                .orElseThrow(() -> ExceptionUtil.badRequest("section.notfound", locale));
 
         Student student = new Student();
 
@@ -116,9 +116,72 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public void update(String id, StudentRequest request, Locale Locale) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'update'");
+    @Transactional
+    public void update(String id, StudentUpdate request, Locale locale) {
+        validationService.validate(request);
+
+        Student student = repository.findById(id)
+                .orElseThrow(() -> ExceptionUtil.notFound("student.notfound", locale));
+
+        LocalDate birthDate;
+        try {
+            birthDate = LocalDate.of(
+                    Integer.parseInt(request.getBirthYear()),
+                    request.getBirthMonth(),
+                    Integer.parseInt(request.getBirthDate()));
+        } catch (DateTimeException | NumberFormatException e) {
+            throw ExceptionUtil.badRequest("invalid.date", locale);
+        }
+
+        Regency regency = regencyService.findById(request.getBirthPlaceRegency())
+                .orElseThrow(() -> ExceptionUtil.notFound("regency.notfound", locale));
+
+        District district = districtService.findById(request.getDistrictAddress())
+                .orElseThrow(() -> ExceptionUtil.notFound("district.notfound", locale));
+
+        repository.findByUsername(request.getUsername())
+                .filter(s -> !s.getId().equals(id))
+                .ifPresent(s -> {
+                    throw ExceptionUtil.badRequest("username.already.exists", locale);
+                });
+
+        repository.findByEmail(request.getEmail())
+                .filter(s -> !s.getId().equals(id))
+                .ifPresent(s -> {
+                    throw ExceptionUtil.badRequest("email.already.exists", locale);
+                });
+
+        repository.findByPhoneNumber(request.getPhoneNumber())
+                .filter(s -> !s.getId().equals(id))
+                .ifPresent(s -> {
+                    throw ExceptionUtil.badRequest("phone.number.already.exists", locale);
+                });
+
+        Department department = departmentService.findByName(request.getDepartmentName())
+                .orElseThrow(() -> ExceptionUtil.badRequest("department.notfound", locale));
+
+        Classroom classroom = department.getClassrooms().stream()
+                .filter(c -> c.getName().contains(request.getClassroomName()))
+                .findFirst()
+                .orElseThrow(() -> ExceptionUtil.badRequest("classroom.10.notfound", locale));
+
+        Section section = classroom.getSections().stream()
+                .filter(s -> s.getName().equals(request.getSectionName().charAt(0)))
+                .findFirst()
+                .orElseThrow(() -> ExceptionUtil.badRequest("section.notfound", locale));
+
+        student.setName(request.getName());
+        student.setGender(request.getGender());
+        student.setBirthplace(regency);
+        student.setBirthDate(birthDate);
+        student.setDistrictAddress(district);
+        student.setAddress(request.getAddress());
+        student.setUsername(request.getUsername());
+        student.setEmail(request.getEmail());
+        student.setPhoneNumber(request.getPhoneNumber());
+        student.setSection(section);
+
+        repository.save(student);
     }
 
     @Override
