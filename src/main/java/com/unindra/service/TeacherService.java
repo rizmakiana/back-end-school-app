@@ -13,8 +13,8 @@ public interface TeacherService {
 
     void add(TeacherRequest request, Locale locale);
 
-    void update(String id, TeacherUpdate request, Locale locale)
+    void update(String id, TeacherUpdate request, Locale locale);
 
-    void delete(String id, Locale locale)
+    void delete(String id, Locale locale);
     
 }
