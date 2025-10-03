@@ -192,6 +192,7 @@ public class StudentServiceImpl implements StudentService {
         repository.delete(student);
     }
 
+    @Transactional
     public StudentResponse generateStudentResponse(Student student) {
         return StudentResponse.builder()
                 .id(student.getId())
@@ -204,6 +205,9 @@ public class StudentServiceImpl implements StudentService {
                 .username(student.getUsername())
                 .email(student.getEmail())
                 .phoneNumber(student.getPhoneNumber())
+                .departmentName(student.getSection().getClassroom().getDepartment().getName())
+                .classroomName(student.getSection().getClassroom().getName())
+                .sectionName(String.valueOf(student.getSection().getName()))
                 .build();
     }
 

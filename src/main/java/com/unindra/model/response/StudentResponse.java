@@ -31,4 +31,10 @@ public class StudentResponse {
 
     private String phoneNumber;
 
+    private String departmentName;
+
+    private String classroomName;
+
+    private String sectionName;
+
 }
