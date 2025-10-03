@@ -57,4 +57,7 @@ public class StudentRequest {
     @NotBlank(message = "{phone.number.notblank}")
     private String phoneNumber;
 
+    @NotBlank
+    private String departmentName;
+
 }

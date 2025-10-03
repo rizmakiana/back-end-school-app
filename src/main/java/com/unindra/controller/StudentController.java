@@ -9,9 +9,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.unindra.model.request.StudentRequest;
 import com.unindra.model.response.StudentResponse;
 import com.unindra.model.response.WebResponse;
 import com.unindra.service.StudentService;
@@ -44,6 +47,18 @@ public class StudentController {
         return ResponseEntity.ok(
                 WebResponse.<String>builder()
                         .message(source.getMessage("student.deleted", null, locale))
+                        .build());
+    }
+
+    @PostMapping(path = "/staff/students")
+    public ResponseEntity<WebResponse<String>> add(
+            Authentication authentication,
+            @RequestBody StudentRequest request,
+            Locale locale) {
+        service.add(request, locale);
+        return ResponseEntity.ok(
+                WebResponse.<String>builder()
+                        .message(source.getMessage("student.registered", null, locale))
                         .build());
     }
 }
