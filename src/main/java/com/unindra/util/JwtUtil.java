@@ -1,12 +1,12 @@
 package com.unindra.util;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.unindra.entity.Staff;
 import com.unindra.model.response.TokenResponse;
 
 import io.jsonwebtoken.Claims;
@@ -25,16 +25,16 @@ public class JwtUtil {
     private long jwtExpiration;
 
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public TokenResponse generateToken(Staff staff) {
+    public TokenResponse generateToken(String username, String role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpiration);
 
         String token = Jwts.builder()
-                .setSubject(staff.getUsername())
-                .claim("role", staff.getRole())
+                .setSubject(username)
+                .claim("role", role)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)

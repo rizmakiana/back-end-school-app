@@ -6,8 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.LocalDate;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,23 +13,19 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.unindra.entity.District;
-import com.unindra.entity.Regency;
 import com.unindra.entity.Staff;
 import com.unindra.model.request.LoginRequest;
 import com.unindra.model.response.TokenResponse;
 import com.unindra.model.response.WebResponse;
-import com.unindra.model.util.Gender;
-import com.unindra.repository.DistrictRepository;
-import com.unindra.repository.RegencyRepository;
+import com.unindra.model.util.Role;
 import com.unindra.repository.StaffRepository;
-import com.unindra.security.BCrypt;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -48,10 +42,7 @@ public class AuthControllerTest {
     private StaffRepository staffRepository;
 
     @Autowired
-    private RegencyRepository regencyRepository;
-
-    @Autowired
-    private DistrictRepository districtRepository;
+    private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     public void before() {
@@ -59,17 +50,10 @@ public class AuthControllerTest {
 
         Staff staff = new Staff();
 
-        Regency regency = regencyRepository.findById("3201").orElse(null);
-        District district = districtRepository.findById("320101").orElse(null);
-
         staff.setName("Zahra Hanifa");
-        staff.setGender(Gender.FEMALE);
-        staff.setBirthDate(LocalDate.of(2003, 4, 14));
-        staff.setBirthplace(regency);
-        staff.setDistrictAddress(district);
-        staff.setAddress("Kp. Jatiasih no 96");
+        staff.setRole(Role.STAFF);
         staff.setUsername("zahra");
-        staff.setPassword(BCrypt.hashpw("rahasia", BCrypt.gensalt()));
+        staff.setPassword(passwordEncoder.encode("rahasia"));
         staff.setEmail("zahra@gmail.com");
         staff.setPhoneNumber("0831341341");
 
@@ -86,7 +70,7 @@ public class AuthControllerTest {
                 .build();
 
         mockMvc.perform(
-                post("/api/auth/login/staff")
+                post("/api/auth/login")
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
@@ -116,7 +100,7 @@ public class AuthControllerTest {
                 .build();
 
         mockMvc.perform(
-                post("/api/auth/login/staff")
+                post("/api/auth/login")
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
@@ -145,7 +129,7 @@ public class AuthControllerTest {
                 .build();
 
         mockMvc.perform(
-                post("/api/auth/login/staff")
+                post("/api/auth/login")
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
@@ -174,7 +158,7 @@ public class AuthControllerTest {
                 .build();
 
         mockMvc.perform(
-                post("/api/auth/login/staff")
+                post("/api/auth/login")
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
@@ -200,7 +184,7 @@ public class AuthControllerTest {
                 .build();
 
         mockMvc.perform(
-                post("/api/auth/login/staff")
+                post("/api/auth/login")
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
@@ -226,7 +210,7 @@ public class AuthControllerTest {
                 .build();
 
         mockMvc.perform(
-                post("/api/auth/login/staff")
+                post("/api/auth/login")
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
@@ -251,7 +235,7 @@ public class AuthControllerTest {
                 .build();
 
         mockMvc.perform(
-                post("/api/auth/login/staff")
+                post("/api/auth/login")
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(HttpHeaders.ACCEPT_LANGUAGE, "en")

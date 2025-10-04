@@ -7,71 +7,60 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.unindra.entity.Staff;
-import com.unindra.service.StaffService;
+import com.unindra.service.UserService;
 import com.unindra.util.JwtUtil;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 
 import java.io.IOException;
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final StaffService staffService;
-
+    private final UserService userService;
     private final JwtUtil jwtUtil;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
+    ) throws ServletException, IOException {
 
-        // ambil token dari header
         String header = request.getHeader("Authorization");
-        String token = null;
+
         if (header != null && header.startsWith("Bearer ")) {
-            token = header.substring(7);
-        }
+            String token = header.substring(7);
 
-        if (token != null) {
             try {
-                // validasi token
                 Claims claims = jwtUtil.validateToken(token);
-
                 String username = claims.getSubject();
-                String role = claims.get("role", String.class);
 
-                // ambil user dari database
-                Staff staff = staffService.findAccount(username)
-                        .orElse(null);
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetails userDetails = userService.loadUserByUsername(username);
 
-                if (staff != null) {
-                    // inject ke Spring Security context
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(username, null,
-                                    List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
 
-
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             } catch (JwtException e) {
-                // token invalid/expired
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Invalid or expired token");
                 return;
             }
         }
 
-        // lanjutkan filter chain
         filterChain.doFilter(request, response);
     }
 }

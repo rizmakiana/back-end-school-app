@@ -7,6 +7,8 @@ import java.util.Map;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,7 +27,7 @@ public class ErrorController {
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<WebResponse<Object>> constraintViolationException(ConstraintViolationException exception) {
-        
+
         Map<String, String> errors = new HashMap<>();
 
         for (ConstraintViolation<?> error : exception.getConstraintViolations()) {
@@ -34,13 +36,13 @@ public class ErrorController {
 
             errors.put(fieldName, message);
         }
-        
+
         Locale locale = LocaleContextHolder.getLocale();
         WebResponse<Object> response = WebResponse.builder()
-            .message(messageSource.getMessage("validation.fail", null, locale))
-            .errors(errors)
-            .build();
-        
+                .message(messageSource.getMessage("validation.fail", null, locale))
+                .errors(errors)
+                .build();
+
         return ResponseEntity.badRequest().body(response);
     }
 
@@ -48,5 +50,17 @@ public class ErrorController {
     public ResponseEntity<WebResponse<Object>> apiException(ResponseStatusException exception) {
         return ResponseEntity.status(exception.getStatusCode())
                 .body(WebResponse.<Object>builder().errors(exception.getReason()).build());
-    }    
+    }
+
+    @ExceptionHandler({ BadCredentialsException.class, UsernameNotFoundException.class })
+    public ResponseEntity<WebResponse<Object>> handleAuthExceptions(Exception ex) {
+        Locale locale = LocaleContextHolder.getLocale();
+
+        WebResponse<Object> response = WebResponse.builder()
+                .errors(messageSource.getMessage("login.fail", null, locale))
+                .build();
+
+        return ResponseEntity.badRequest().body(response);
+    }
+
 }
