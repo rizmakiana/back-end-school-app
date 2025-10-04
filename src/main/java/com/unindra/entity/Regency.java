@@ -24,8 +24,7 @@ import lombok.Setter;
 @Table(name = "regencies")
 public class Regency {
 
-    @Id
-    @Column(length = 4)
+    @Id @Column(length = 4)
     private String id;
 
     @Column(nullable = false)

@@ -20,16 +20,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @Table(name = "provinces")
 public class Province {
-
-    // @Id
-    // private String id;
-
-    // private String name;
-
-    // @OneToMany(mappedBy = "province")
-    // private List<Regency> regencies;
-    @Id
-    @Column(length = 2)
+    
+    @Id @Column(length = 2)
     private String id;
 
     @Column(nullable = false)
