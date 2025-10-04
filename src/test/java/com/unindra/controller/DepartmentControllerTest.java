@@ -11,7 +11,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,8 +30,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.unindra.entity.Department;
-import com.unindra.entity.District;
-import com.unindra.entity.Regency;
 import com.unindra.entity.Staff;
 import com.unindra.model.request.DepartmentRequest;
 import com.unindra.model.request.LoginRequest;
@@ -43,11 +40,8 @@ import com.unindra.model.util.Gender;
 import com.unindra.model.util.Role;
 import com.unindra.repository.ClassroomRepository;
 import com.unindra.repository.DepartmentRepository;
-import com.unindra.repository.DistrictRepository;
-import com.unindra.repository.RegencyRepository;
 import com.unindra.repository.SectionRepository;
 import com.unindra.repository.StaffRepository;
-import com.unindra.util.JwtUtil;
 
 @SpringBootTest
 @AutoConfigureMockMvc
