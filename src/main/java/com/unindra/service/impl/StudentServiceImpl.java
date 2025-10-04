@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +19,6 @@ import com.unindra.model.request.StudentRequest;
 import com.unindra.model.request.StudentUpdate;
 import com.unindra.model.response.StudentResponse;
 import com.unindra.repository.StudentRepository;
-import com.unindra.security.BCrypt;
 import com.unindra.service.DepartmentService;
 import com.unindra.service.DistrictService;
 import com.unindra.service.RegencyService;
@@ -41,6 +41,8 @@ public class StudentServiceImpl implements StudentService {
     private DistrictService districtService;
 
     private DepartmentService departmentService;
+
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public List<StudentResponse> getAll() {
@@ -107,7 +109,7 @@ public class StudentServiceImpl implements StudentService {
         student.setDistrictAddress(district);
         student.setAddress(request.getAddress());
         student.setUsername(request.getUsername());
-        student.setPassword(BCrypt.hashpw(request.getPassword(), BCrypt.gensalt()));
+        student.setPassword(passwordEncoder.encode(request.getPassword()));
         student.setEmail(request.getEmail());
         student.setPhoneNumber(request.getPhoneNumber());
         student.setSection(section);

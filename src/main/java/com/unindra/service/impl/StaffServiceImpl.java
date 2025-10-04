@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.Locale;
 import java.util.Optional;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.unindra.entity.District;
@@ -13,7 +14,6 @@ import com.unindra.entity.Staff;
 import com.unindra.model.request.RegisterStaffRequest;
 import com.unindra.model.util.Role;
 import com.unindra.repository.StaffRepository;
-import com.unindra.security.BCrypt;
 import com.unindra.service.DistrictService;
 import com.unindra.service.RegencyService;
 import com.unindra.service.StaffService;
@@ -33,6 +33,8 @@ public class StaffServiceImpl implements StaffService {
     private final RegencyService regencyService;
 
     private final DistrictService districtService;
+
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void register(RegisterStaffRequest request, Locale locale) {
@@ -77,7 +79,7 @@ public class StaffServiceImpl implements StaffService {
         staff.setDistrictAddress(district);
         staff.setAddress(request.getAddress());
         staff.setUsername(request.getUsername()); 
-        staff.setPassword(BCrypt.hashpw(request.getPassword(), BCrypt.gensalt()));
+        staff.setPassword(passwordEncoder.encode(request.getPassword()));
         staff.setEmail(request.getEmail());
         staff.setPhoneNumber(request.getPhoneNumber());
         staff.setRole(Role.STAFF);
