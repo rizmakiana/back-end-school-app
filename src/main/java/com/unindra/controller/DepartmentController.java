@@ -15,6 +15,7 @@ import java.util.Locale;
 
 import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,14 +26,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(path = "/api/staff/departments")
+@RequestMapping(path = "/api")
 public class DepartmentController {
 
     private final DepartmentService service;
 
     private final MessageSource source;
 
-    @GetMapping
+    @PreAuthorize("hasRole('STAFF')")
+    @GetMapping(path = "/staff/departments")
     public ResponseEntity<WebResponse<List<DepartmentResponse>>> getAll(Authentication authentication) {
 
         WebResponse<List<DepartmentResponse>> response = WebResponse.<List<DepartmentResponse>>builder()
@@ -42,7 +44,8 @@ public class DepartmentController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping()
+    @PreAuthorize("hasRole('STAFF')")
+    @PostMapping(path = "/staff/departments")
     public ResponseEntity<WebResponse<String>> create(
             @RequestBody DepartmentRequest request,
             Authentication authentication,
@@ -53,7 +56,8 @@ public class DepartmentController {
                 .message(source.getMessage("department.created", null, locale)).build());
     }
 
-    @PatchMapping(path = "/{id}")
+    @PreAuthorize("hasRole('STAFF')")
+    @PatchMapping(path = "/staff/departments/{id}")
     public ResponseEntity<WebResponse<String>> update(
             @PathVariable String id,
             @RequestBody DepartmentRequest request,
@@ -66,7 +70,8 @@ public class DepartmentController {
                 .build());
     }
 
-    @DeleteMapping(path = "/{id}")
+    @PreAuthorize("hasRole('STAFF')")
+    @DeleteMapping(path = "staff/departments/{id}")
     public ResponseEntity<WebResponse<String>> delete(
             @PathVariable String id,
             Locale locale) {
