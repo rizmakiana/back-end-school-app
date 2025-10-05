@@ -43,7 +43,7 @@ public class TeacherServiceImpl implements TeacherService {
     @Transactional(readOnly = true)
     public List<TeacherResponse> getAll() {
         return repository.findAll().stream()
-            .map(t -> getTeacherResponse(t)).toList();
+                .map(t -> getTeacherResponse(t)).toList();
     }
 
     @Override
@@ -101,8 +101,55 @@ public class TeacherServiceImpl implements TeacherService {
 
     @Override
     public void update(String id, TeacherUpdate request, Locale locale) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'update'");
+        validationService.validate(request);
+
+        Teacher teacher = repository.findById(id)
+                .orElseThrow(() -> ExceptionUtil.badRequest("teacher.notfound", locale));
+        LocalDate birthDate;
+        try {
+            birthDate = LocalDate.of(
+                    Integer.parseInt(request.getBirthDate()),
+                    request.getBirthMonth(),
+                    Integer.parseInt(request.getBirthDate()));
+        } catch (DateTimeException | NumberFormatException e) {
+            throw ExceptionUtil.badRequest("invalid.date", locale);
+        }
+
+        Regency regency = regencyService.findById(request.getBirthPlaceRegency())
+                .orElseThrow(() -> ExceptionUtil.notFound("regency.notfound", locale));
+
+        District district = districtService.findById(request.getDistrictAddress())
+                .orElseThrow(() -> ExceptionUtil.notFound("district.notfound", locale));
+
+        repository.findByUsername(request.getUsername())
+                .filter(s -> !s.getId().equals(id))
+                .ifPresent(s -> {
+                    throw ExceptionUtil.badRequest("username.already.exists", locale);
+                });
+
+        repository.findByEmail(request.getEmail())
+                .filter(s -> !s.getId().equals(id))
+                .ifPresent(s -> {
+                    throw ExceptionUtil.badRequest("email.already.exists", locale);
+                });
+
+        repository.findByPhoneNumber(request.getPhoneNumber())
+                .filter(s -> !s.getId().equals(id))
+                .ifPresent(s -> {
+                    throw ExceptionUtil.badRequest("phone.number.already.exists", locale);
+                });
+
+        teacher.setName(request.getName());
+        teacher.setGender(request.getGender());
+        teacher.setBirthplace(regency);
+        teacher.setBirthDate(birthDate);
+        teacher.setDistrictAddress(district);
+        teacher.setAddress(request.getAddress());
+        teacher.setUsername(request.getUsername());
+        teacher.setEmail(request.getEmail());
+        teacher.setPhoneNumber(request.getPhoneNumber());
+
+        repository.save(teacher);
     }
 
     @Override
@@ -113,18 +160,18 @@ public class TeacherServiceImpl implements TeacherService {
 
     public TeacherResponse getTeacherResponse(Teacher teacher) {
         return TeacherResponse.builder()
-            .id(teacher.getId())
-            .name(teacher.getName())
-            .gender(teacher.getGender())
-            .birthPlace(teacher.getBirthplace().getId())
-            .birthDate(teacher.getBirthDate())
-            .districtAddress(teacher.getDistrictAddress().getId())
-            .address(teacher.getAddress())
-            .username(teacher.getUsername())
-            .email(teacher.getEmail())
-            .phoneNumber(teacher.getPhoneNumber())
-            .courseHandleds(getCourseHandled(teacher))
-            .build();
+                .id(teacher.getId())
+                .name(teacher.getName())
+                .gender(teacher.getGender())
+                .birthPlace(teacher.getBirthplace().getId())
+                .birthDate(teacher.getBirthDate())
+                .districtAddress(teacher.getDistrictAddress().getId())
+                .address(teacher.getAddress())
+                .username(teacher.getUsername())
+                .email(teacher.getEmail())
+                .phoneNumber(teacher.getPhoneNumber())
+                .courseHandleds(getCourseHandled(teacher))
+                .build();
     }
 
     public List<CourseHandled> getCourseHandled(Teacher teacher) {

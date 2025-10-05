@@ -17,15 +17,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping(path = "/api")
 public class TeacherController {
-    
+
     private final TeacherService service;
 
     @GetMapping(path = "/staff/teachers")
     public void getAll() {
         ResponseEntity.ok(
-            WebResponse.<List<TeacherResponse>>builder()
-            .data(service.getAll())
-            .build()
-        );
+                WebResponse.<List<TeacherResponse>>builder()
+                        .data(service.getAll())
+                        .build());
     }
 }
