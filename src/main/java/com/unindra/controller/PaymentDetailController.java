@@ -43,21 +43,22 @@ public class PaymentDetailController {
     @PreAuthorize("hasRole('STAFF')")
     @PostMapping(path = "/staff/payment-details")
     public ResponseEntity<WebResponse<String>> add(@RequestBody PaymentDetailRequest request, Locale locale) {
+        service.add(request, locale);
         return ResponseEntity.ok(
-            WebResponse.<String>builder()
-            .message(source.getMessage("payment.detail.added.succesfully", null, locale))
-            .build());
-            
-        }
-        
+                WebResponse.<String>builder()
+                        .message(source.getMessage("payment.detail.added.succesfully", null, locale))
+                        .build());
+
+    }
+
     @PreAuthorize("hasRole('STAFF')")
     @DeleteMapping(path = "/staff/payment-details/{id}")
     public void delete(@PathVariable String id, Locale locale) {
+        service.delete(id, locale);
         ResponseEntity.ok(
-            WebResponse.<String>builder()
-            .message(source.getMessage("payment.detail.deleted", null, locale))
-            .build()
-        );
-        
+                WebResponse.<String>builder()
+                        .message(source.getMessage("payment.detail.deleted", null, locale))
+                        .build());
+
     }
 }
