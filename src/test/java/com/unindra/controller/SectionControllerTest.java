@@ -21,8 +21,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -31,283 +33,361 @@ import com.unindra.entity.Classroom;
 import com.unindra.entity.Department;
 import com.unindra.entity.Section;
 import com.unindra.entity.Staff;
+import com.unindra.model.request.LoginRequest;
 import com.unindra.model.request.SectionRequest;
 import com.unindra.model.request.SectionUpdateRequest;
 import com.unindra.model.response.SectionResponse;
 import com.unindra.model.response.TokenResponse;
 import com.unindra.model.response.WebResponse;
+import com.unindra.model.util.Role;
 import com.unindra.repository.ClassroomRepository;
 import com.unindra.repository.DepartmentRepository;
 import com.unindra.repository.SectionRepository;
 import com.unindra.repository.StaffRepository;
-import com.unindra.security.BCrypt;
-import com.unindra.util.JwtUtil;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class SectionControllerTest {
 
-    @Autowired
-    private SectionRepository repository;
+	@Autowired
+	private SectionRepository repository;
 
-    @Autowired
-    private ClassroomRepository classroomRepository;
+	@Autowired
+	private ClassroomRepository classroomRepository;
 
-    @Autowired
-    private DepartmentRepository departmentRepository;
+	@Autowired
+	private DepartmentRepository departmentRepository;
 
-    @Autowired
-    private MockMvc mockMvc;
+	@Autowired
+	private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+	@Autowired
+	private ObjectMapper objectMapper;
 
-    @Autowired
-    private JwtUtil jwtUtil;
+	@Autowired
+	private StaffRepository staffRepository;
 
-    @Autowired
-    private StaffRepository staffRepository;
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
-    @BeforeEach
-    void setUp() {
-        repository.deleteAll();
-        classroomRepository.deleteAll();
-        departmentRepository.deleteAll();
-        staffRepository.deleteAll();
+	@BeforeEach
+	void setUp() {
+		repository.deleteAll();
+		classroomRepository.deleteAll();
+		departmentRepository.deleteAll();
+		staffRepository.deleteAll();
 
-        Department d = new Department();
-        d.setName("Materi Ilmu Pengetahuan Alam");
-        d.setCode("MIPA");
-        departmentRepository.save(d);
+		Department d = new Department();
+		d.setName("Materi Ilmu Pengetahuan Alam");
+		d.setCode("MIPA");
+		departmentRepository.save(d);
 
-        Classroom c = new Classroom();
-        c.setDepartment(d);
-        c.setName("10");
-        c.setCode(d.getCode() + c.getName());
-        classroomRepository.save(c);
+		Classroom c = new Classroom();
+		c.setDepartment(d);
+		c.setName("10");
+		c.setCode(d.getCode() + c.getName());
+		classroomRepository.save(c);
 
-        for (int i = 0; i < 10; i++) {
-            Section section = new Section();
+		for (int i = 0; i < 10; i++) {
+			Section section = new Section();
 
-            section.setClassroom(c);
-            char name = (char) ('A' + i);
-            section.setName(name);
-            section.setCode(String.format("%s %c", c.getCode(), name));
+			section.setClassroom(c);
+			char name = (char) ('A' + i);
+			section.setName(name);
+			section.setCode(String.format("%s %c", c.getCode(), name));
 
-            repository.save(section);
-        }
+			repository.save(section);
+		}
 
-        staffRepository.deleteAll();
+		staffRepository.deleteAll();
 
-        Staff staff = new Staff();
+		Staff staff = new Staff();
 
-        staff.setName("Zahra Hanifa");
-        staff.setUsername("zahra");
-        staff.setPassword(BCrypt.hashpw("rahasia", BCrypt.gensalt()));
+		staff.setName("Zahra Hanifa");
+		staff.setUsername("zahra");
+		staff.setPassword(passwordEncoder.encode("rahasia"));
+		staff.setRole(Role.STAFF);
 
-        staffRepository.save(staff);
-    }
+		staffRepository.save(staff);
+	}
 
-    @Test
-    public void getAllSuccess() throws Exception {
+	@Test
+	public void getAllSuccess() throws Exception {
 
-        Staff staff = staffRepository.findByUsername("zahra").orElse(null);
-        TokenResponse token = jwtUtil.generateToken(staff);
+		LoginRequest loginRequest = LoginRequest.builder()
+				.username("zahra")
+				.password("rahasia")
+				.build();
 
-        mockMvc.perform(
-                get("/api/sections")
-                        .accept(MediaType.APPLICATION_JSON)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken())
-                        .header(HttpHeaders.ACCEPT_LANGUAGE, "en"))
-                .andExpectAll(
-                        status().isOk())
-                .andDo(result -> {
-                    WebResponse<List<SectionResponse>> response = objectMapper.readValue(
-                            result.getResponse().getContentAsString(),
-                            new TypeReference<WebResponse<List<SectionResponse>>>() {
-                            });
+		MvcResult loginResult = mockMvc.perform(
+				post("/api/auth/login")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(loginRequest))
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andReturn();
 
-                    assertNull(response.getErrors());
-                    assertNotNull(response.getData());
-                    assertEquals(response.getData().size(), 10);
+		WebResponse<TokenResponse> loginResponse = objectMapper.readValue(
+				loginResult.getResponse().getContentAsString(),
+				new TypeReference<WebResponse<TokenResponse>>() {
+				});
 
-                });
-    }
+		String token = loginResponse.getData().getToken();
 
-    @Test
-    public void getAllFailValidation() throws Exception {
+		mockMvc.perform(
+				get("/api/staff/sections")
+						.accept(MediaType.APPLICATION_JSON)
+						.contentType(MediaType.APPLICATION_JSON)
+						.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+						.header(HttpHeaders.ACCEPT_LANGUAGE, "en"))
+				.andExpectAll(
+						status().isOk())
+				.andDo(result -> {
+					WebResponse<List<SectionResponse>> response = objectMapper.readValue(
+							result.getResponse().getContentAsString(),
+							new TypeReference<WebResponse<List<SectionResponse>>>() {
+							});
 
-        String token = UUID.randomUUID().toString();
+					assertNull(response.getErrors());
+					assertNotNull(response.getData());
+					assertEquals(response.getData().size(), 10);
 
-        mockMvc.perform(
-                get("/api/sections")
-                        .accept(MediaType.APPLICATION_JSON)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                        .header(HttpHeaders.ACCEPT_LANGUAGE, "en"))
-                .andExpectAll(
-                        status().isUnauthorized())
-                .andDo(result -> {
-                    String response = result.getResponse().getContentAsString();
+				});
+	}
 
-                    assertNotNull(response);
-                });
-    }
+	@Test
+	public void getAllFailValidation() throws Exception {
 
-    @Test
-    public void createdSuccess() throws Exception {
+		String token = UUID.randomUUID().toString();
 
-        Staff staff = staffRepository.findByUsername("zahra").orElse(null);
-        TokenResponse token = jwtUtil.generateToken(staff);
+		mockMvc.perform(
+				get("/api/staff/sections")
+						.accept(MediaType.APPLICATION_JSON)
+						.contentType(MediaType.APPLICATION_JSON)
+						.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+						.header(HttpHeaders.ACCEPT_LANGUAGE, "en"))
+				.andExpectAll(
+						status().isUnauthorized())
+				.andReturn();
+	}
 
-        SectionRequest request = SectionRequest.builder()
-                .departmentName("Materi Ilmu Pengetahuan Alam")
-                .classroomName("10")
-                .build();
+	@Test
+	public void createdSuccess() throws Exception {
 
-        mockMvc.perform(
-                post("/api/sections")
-                        .accept(MediaType.APPLICATION_JSON)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken())
-                        .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpectAll(
-                        status().isOk())
-                .andDo(result -> {
-                    WebResponse<List<String>> response = objectMapper.readValue(
-                            result.getResponse().getContentAsString(),
-                            new TypeReference<WebResponse<List<String>>>() {
-                            });
+		LoginRequest loginRequest = LoginRequest.builder()
+				.username("zahra")
+				.password("rahasia")
+				.build();
 
-                    assertNull(response.getErrors());
+		MvcResult loginResult = mockMvc.perform(
+				post("/api/auth/login")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(loginRequest))
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andReturn();
 
-                });
-    }
+		WebResponse<TokenResponse> loginResponse = objectMapper.readValue(
+				loginResult.getResponse().getContentAsString(),
+				new TypeReference<WebResponse<TokenResponse>>() {
+				});
 
-    @Test
-    public void createdFailUnathorized() throws Exception {
+		String token = loginResponse.getData().getToken();
 
-        String token = UUID.randomUUID().toString();
+		SectionRequest request = SectionRequest.builder()
+				.departmentName("Materi Ilmu Pengetahuan Alam")
+				.classroomName("10")
+				.build();
 
-        SectionRequest request = SectionRequest.builder()
-                .departmentName("Materi Ilmu Pengetahuan Alam")
-                .classroomName("10")
-                .build();
+		mockMvc.perform(
+				post("/api/staff/sections")
+						.accept(MediaType.APPLICATION_JSON)
+						.contentType(MediaType.APPLICATION_JSON)
+						.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+						.header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+						.content(objectMapper.writeValueAsString(request)))
+				.andExpectAll(
+						status().isOk())
+				.andDo(result -> {
+					WebResponse<List<String>> response = objectMapper.readValue(
+							result.getResponse().getContentAsString(),
+							new TypeReference<WebResponse<List<String>>>() {
+							});
 
-        mockMvc.perform(
-                post("/api/sections")
-                        .accept(MediaType.APPLICATION_JSON)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                        .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpectAll(
-                        status().isUnauthorized())
-                .andDo(result -> {
-                    String responseBody = result.getResponse().getContentAsString();
-                    
-                    assertNotNull(responseBody);
-                });
-    }
+					assertNull(response.getErrors());
 
-    @Test
-    public void testDeleteSucces() throws JsonProcessingException, Exception {
-        
-        Staff staff = staffRepository.findByUsername("zahra").orElse(null);
-        TokenResponse token = jwtUtil.generateToken(staff);
+				});
+	}
 
-        Section section = repository.findByCode("MIPA10 A").orElse(null);
-        mockMvc.perform(
-                delete("/api/sections/" + section.getId())
-                        .accept(MediaType.APPLICATION_JSON)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken())
-                        .header(HttpHeaders.ACCEPT_LANGUAGE, "en"))
-                .andExpectAll(
-                        status().isOk())
-                .andDo(result -> {
-                    WebResponse<List<String>> response = objectMapper.readValue(
-                            result.getResponse().getContentAsString(),
-                            new TypeReference<WebResponse<List<String>>>() {
-                            });
+	@Test
+	public void createdFailUnathorized() throws Exception {
 
-                    assertNull(response.getErrors());
+		String token = UUID.randomUUID().toString();
 
-                });
-        assertFalse(repository.existsByCode("MIPA10 A"));
+		SectionRequest request = SectionRequest.builder()
+				.departmentName("Materi Ilmu Pengetahuan Alam")
+				.classroomName("10")
+				.build();
 
-    }
+		mockMvc.perform(
+				post("/api/sections")
+						.accept(MediaType.APPLICATION_JSON)
+						.contentType(MediaType.APPLICATION_JSON)
+						.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+						.header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+						.content(objectMapper.writeValueAsString(request)))
+				.andExpectAll(
+						status().isUnauthorized())
+				.andReturn();
+	}
 
-    @Test
-    public void testUpdateSucces() throws JsonProcessingException, Exception {
-        
-        Staff staff = staffRepository.findByUsername("zahra").orElse(null);
-        TokenResponse token = jwtUtil.generateToken(staff);
+	@Test
+	public void testDeleteSucces() throws JsonProcessingException, Exception {
 
-        Section section = repository.findByCode("MIPA10 A").orElse(null);
-        SectionUpdateRequest request = SectionUpdateRequest.builder()
-                .code("Z")
-                .build();
+		LoginRequest loginRequest = LoginRequest.builder()
+				.username("zahra")
+				.password("rahasia")
+				.build();
 
-        mockMvc.perform(
-                patch("/api/sections/" + section.getId())
-                        .accept(MediaType.APPLICATION_JSON)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken())
-                        .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpectAll(
-                        status().isOk())
-                .andDo(result -> {
-                    WebResponse<List<String>> response = objectMapper.readValue(
-                            result.getResponse().getContentAsString(),
-                            new TypeReference<WebResponse<List<String>>>() {
-                            });
+		MvcResult loginResult = mockMvc.perform(
+				post("/api/auth/login")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(loginRequest))
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andReturn();
 
-                    assertNull(response.getErrors());
+		WebResponse<TokenResponse> loginResponse = objectMapper.readValue(
+				loginResult.getResponse().getContentAsString(),
+				new TypeReference<WebResponse<TokenResponse>>() {
+				});
 
-                });
-                
-        assertFalse(repository.existsByCode("MIPA10 A"));
-        assertTrue(repository.existsByCode("MIPA10 Z"));
+		String token = loginResponse.getData().getToken();
 
-    }
+		Section section = repository.findByCode("MIPA10 A").orElse(null);
+		mockMvc.perform(
+				delete("/api/staff/sections/" + section.getId())
+						.accept(MediaType.APPLICATION_JSON)
+						.contentType(MediaType.APPLICATION_JSON)
+						.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+						.header(HttpHeaders.ACCEPT_LANGUAGE, "en"))
+				.andExpectAll(
+						status().isOk())
+				.andDo(result -> {
+					WebResponse<List<String>> response = objectMapper.readValue(
+							result.getResponse().getContentAsString(),
+							new TypeReference<WebResponse<List<String>>>() {
+							});
 
-    @Test
-    public void testUpdateFailAlreadyExists() throws JsonProcessingException, Exception {
-        
-        Staff staff = staffRepository.findByUsername("zahra").orElse(null);
-        TokenResponse token = jwtUtil.generateToken(staff);
+					assertNull(response.getErrors());
 
-        Section section = repository.findByCode("MIPA10 A").orElse(null);
-        SectionUpdateRequest request = SectionUpdateRequest.builder()
-                .code("B")
-                .build();
+				});
+		assertFalse(repository.existsByCode("MIPA10 A"));
 
-        mockMvc.perform(
-                patch("/api/sections/" + section.getId())
-                        .accept(MediaType.APPLICATION_JSON)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token.getToken())
-                        .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpectAll(
-                        status().isBadRequest())
-                .andDo(result -> {
-                    WebResponse<List<String>> response = objectMapper.readValue(
-                            result.getResponse().getContentAsString(),
-                            new TypeReference<WebResponse<List<String>>>() {
-                            });
+	}
 
-                    assertNotNull(response.getErrors());
+	@Test
+	public void testUpdateSucces() throws JsonProcessingException, Exception {
 
-                });
-                
-        assertTrue(repository.existsByCode("MIPA10 A"));
-        assertFalse(repository.existsByCode("MIPA10 Z"));
+		LoginRequest loginRequest = LoginRequest.builder()
+				.username("zahra")
+				.password("rahasia")
+				.build();
 
-    }
+		MvcResult loginResult = mockMvc.perform(
+				post("/api/auth/login")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(loginRequest))
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andReturn();
+
+		WebResponse<TokenResponse> loginResponse = objectMapper.readValue(
+				loginResult.getResponse().getContentAsString(),
+				new TypeReference<WebResponse<TokenResponse>>() {
+				});
+
+		String token = loginResponse.getData().getToken();
+
+		Section section = repository.findByCode("MIPA10 A").orElse(null);
+		SectionUpdateRequest request = SectionUpdateRequest.builder()
+				.code("Z")
+				.build();
+
+		mockMvc.perform(
+				patch("/api/staff/sections/" + section.getId())
+						.accept(MediaType.APPLICATION_JSON)
+						.contentType(MediaType.APPLICATION_JSON)
+						.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+						.header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+						.content(objectMapper.writeValueAsString(request)))
+				.andExpectAll(
+						status().isOk())
+				.andDo(result -> {
+					WebResponse<List<String>> response = objectMapper.readValue(
+							result.getResponse().getContentAsString(),
+							new TypeReference<WebResponse<List<String>>>() {
+							});
+
+					assertNull(response.getErrors());
+
+				});
+
+		assertFalse(repository.existsByCode("MIPA10 A"));
+		assertTrue(repository.existsByCode("MIPA10 Z"));
+
+	}
+
+	@Test
+	public void testUpdateFailAlreadyExists() throws JsonProcessingException, Exception {
+
+		LoginRequest loginRequest = LoginRequest.builder()
+				.username("zahra")
+				.password("rahasia")
+				.build();
+
+		MvcResult loginResult = mockMvc.perform(
+				post("/api/auth/login")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(loginRequest))
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andReturn();
+
+		WebResponse<TokenResponse> loginResponse = objectMapper.readValue(
+				loginResult.getResponse().getContentAsString(),
+				new TypeReference<WebResponse<TokenResponse>>() {
+				});
+
+		String token = loginResponse.getData().getToken();
+
+		Section section = repository.findByCode("MIPA10 A").orElse(null);
+		SectionUpdateRequest request = SectionUpdateRequest.builder()
+				.code("B")
+				.build();
+
+		mockMvc.perform(
+				patch("/api/staff/sections/" + section.getId())
+						.accept(MediaType.APPLICATION_JSON)
+						.contentType(MediaType.APPLICATION_JSON)
+						.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+						.header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+						.content(objectMapper.writeValueAsString(request)))
+				.andExpectAll(
+						status().isBadRequest())
+				.andDo(result -> {
+					WebResponse<List<String>> response = objectMapper.readValue(
+							result.getResponse().getContentAsString(),
+							new TypeReference<WebResponse<List<String>>>() {
+							});
+
+					assertNotNull(response.getErrors());
+
+				});
+
+		assertTrue(repository.existsByCode("MIPA10 A"));
+		assertFalse(repository.existsByCode("MIPA10 Z"));
+
+	}
 }
