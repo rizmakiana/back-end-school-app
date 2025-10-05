@@ -104,7 +104,7 @@ public class TeacherServiceImpl implements TeacherService {
         validationService.validate(request);
 
         Teacher teacher = repository.findById(id)
-                .orElseThrow(() -> ExceptionUtil.badRequest("teacher.notfound", locale));
+                .orElseThrow(() -> ExceptionUtil.badRequest("teacher.not.found", locale));
         LocalDate birthDate;
         try {
             birthDate = LocalDate.of(
@@ -154,8 +154,22 @@ public class TeacherServiceImpl implements TeacherService {
 
     @Override
     public void delete(String id, Locale locale) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'delete'");
+
+        Teacher teacher = repository.findById(id)
+                .orElseThrow(() -> ExceptionUtil.notFound("teacher.not.found", locale));
+
+        boolean hasAssignments = !teacher.getTeachingAssignments().isEmpty();
+
+        if (hasAssignments) {
+            boolean hasActivity = teacher.getTeachingAssignments().stream()
+                    .anyMatch(ta -> !ta.getMeetingNumbers().isEmpty());
+
+            if (hasActivity) {
+                throw ExceptionUtil.badRequest("teacher.cannot.be.deleted.with.existing.records", locale);
+            }
+        }
+
+        repository.delete(teacher);
     }
 
     public TeacherResponse getTeacherResponse(Teacher teacher) {
