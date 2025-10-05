@@ -1,5 +1,6 @@
 package com.unindra.entity;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import jakarta.persistence.Entity;
@@ -28,7 +29,7 @@ public class PaymentDetail {
 
     private String name;
 
-    private Double amount;
+    private BigDecimal amount;
 
     @ManyToOne
     @JoinColumn(name = "payment_category_id")
