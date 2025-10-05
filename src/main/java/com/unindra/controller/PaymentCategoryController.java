@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
@@ -55,13 +56,24 @@ public class PaymentCategoryController {
     }
 
     @PreAuthorize("hasRole('STAFF')")
-    @DeleteMapping(path = "/staff/sections/{id}")
+    @DeleteMapping(path = "/staff/payment-category/{id}")
     public ResponseEntity<WebResponse<String>> delete(@PathVariable String id, Locale locale) {
         service.delete(id, locale);
         return ResponseEntity.ok(
                 WebResponse.<String>builder()
                         .message(source.getMessage("payment.category.deleted", null, locale))
                         .build());
+    }
+
+    @PreAuthorize("hasRole('STAFF')")
+    @PatchMapping(path = "/staff/payment-category/{id}")
+    public ResponseEntity<WebResponse<String>> update(@PathVariable String id, @RequestBody PaymentCategoryRequest request, Locale locale) {
+        service.update(id, request, locale);
+        return ResponseEntity.ok(
+            WebResponse.<String>builder()
+            .message(source.getMessage("payment.category.updated.success", null, locale))
+            .build()
+        );
     }
 
 }

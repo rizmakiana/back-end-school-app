@@ -49,13 +49,29 @@ public class PaymentCategoryServiceImpl implements PaymentCategoryService {
     @Transactional
     public void delete(String id, Locale locale) {
         PaymentCategory payment = repository.findById(id)
-            .orElseThrow(() -> ExceptionUtil.badRequest("payment.category.notfound", locale));
+                .orElseThrow(() -> ExceptionUtil.badRequest("payment.category.notfound", locale));
 
         if (!payment.getPaymentDetails().isEmpty()) {
             throw ExceptionUtil.badRequest("payment.detail.exists", locale);
         }
 
         repository.delete(payment);
+    }
+
+    @Override
+    public void update(String id, PaymentCategoryRequest request, Locale locale) {
+
+        PaymentCategory payment = repository.findById(id)
+                .orElseThrow(() -> ExceptionUtil.badRequest("payment.category.notfound", locale));
+
+        repository.findByName(request.getName()).ifPresent(existing -> {
+            if (!existing.getId().equals(payment.getId())) {
+                throw ExceptionUtil.badRequest("payment.category.name.already.exists", locale);
+            }
+        });
+
+        payment.setName(request.getName());
+        repository.save(payment);
     }
 
     public PaymentCategoryResponse getResponse(PaymentCategory payment) {

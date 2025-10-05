@@ -14,4 +14,6 @@ public interface PaymentCategoryService {
 
     void delete(String id, Locale locale);
 
+    void update(String id, PaymentCategoryRequest request, Locale locale);
+
 }
