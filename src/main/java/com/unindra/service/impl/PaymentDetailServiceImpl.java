@@ -96,4 +96,56 @@ public class PaymentDetailServiceImpl implements PaymentDetailService {
         repository.delete(detail);
     }
 
+    @Override
+    public void update(String id, PaymentDetailRequest request, Locale locale) {
+        validationService.validate(request);
+
+        PaymentDetail detail = repository.findById(id)
+                .orElseThrow(() -> ExceptionUtil.badRequest("payment.detail.not.found", locale));
+
+        boolean hasPayments = !detail.getPayments().isEmpty();
+
+        // kalo sudah ada payment dan category nya berubah
+        if (hasPayments && !detail.getPaymentCategory().getName().equals(request.getCategory())) {
+            throw ExceptionUtil.badRequest("payment.detail.cannot.moved.to.other.category", locale);
+        }
+
+        // kalo sudah ada payment dan classroom code nya berubah
+        if (hasPayments && !request.getClassroomCode().equals(detail.getClassroom().getCode())) {
+            throw ExceptionUtil.badRequest("payment.detail.cannot.moved.to.other.classroom", locale);
+        }
+        
+        // kalo sudah ada payment dan amount nya berubah
+        if (hasPayments && !request.getAmount().equals(detail.getAmount().toPlainString())) {
+            throw ExceptionUtil.badRequest("payment.detail.amount.cannot.moved", locale);   
+        }
+
+        PaymentCategory category = paymentCategoryService.findByName(request.getCategory())
+                .orElseThrow(() -> ExceptionUtil.badRequest("payment.category.notfound", locale));
+
+        // kalo sudah ada nama pembayaran di category dan classroom baru
+        Classroom classroom = classroomService.findByCode(request.getClassroomCode()).orElse(null);
+        if (repository.existsByPaymentCategoryAndClassroomAndName(category, classroom, request.getName())) {
+            throw ExceptionUtil.badRequest("payment.detail.already.exists", locale);
+        }
+
+        BigDecimal amount = Optional.ofNullable(request.getAmount())
+                .map(a -> {
+                    try {
+                        return new BigDecimal(a);
+                    } catch (NumberFormatException e) {
+                        throw ExceptionUtil.badRequest("payment.amount.not.valid", locale);
+                    }
+                })
+                .filter(a -> a.compareTo(BigDecimal.ZERO) > 0)
+                .orElseThrow(() -> ExceptionUtil.badRequest("payment.amount.must.be.positive", locale));
+
+        detail.setPaymentCategory(category);
+        detail.setClassroom(classroom);
+        detail.setName(request.getName());
+        detail.setAmount(amount);
+
+        repository.save(detail);
+    }
+
 }

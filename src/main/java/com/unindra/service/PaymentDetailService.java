@@ -13,5 +13,7 @@ public interface PaymentDetailService {
     void add(PaymentDetailRequest request, Locale locale);
 
     void delete(String id, Locale locale);
+
+    void update(String id, PaymentDetailRequest request, Locale locale);
     
 }

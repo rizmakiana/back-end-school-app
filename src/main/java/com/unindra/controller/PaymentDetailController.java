@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -60,5 +61,15 @@ public class PaymentDetailController {
                         .message(source.getMessage("payment.detail.deleted", null, locale))
                         .build());
 
+    }
+
+    @PreAuthorize("hasRole('STAFF')")
+    @PatchMapping(path = "/staff/payment-details/{id}")
+    public void update(@PathVariable String id, @RequestBody PaymentDetailRequest request, Locale locale) {
+        service.update(id, request, locale);
+        ResponseEntity.ok(
+                WebResponse.<String>builder()
+                        .message(source.getMessage("payment.detail.updated", null, locale))
+                        .build());
     }
 }
