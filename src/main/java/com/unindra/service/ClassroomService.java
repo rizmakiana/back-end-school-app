@@ -21,4 +21,5 @@ public interface ClassroomService {
 
     void save(Classroom classroom);
     
+    Optional<Classroom> findByCode(String code);
 }

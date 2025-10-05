@@ -3,6 +3,7 @@ package com.unindra.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.unindra.model.request.PaymentDetailRequest;
 import com.unindra.model.response.PaymentDetailResponse;
 import com.unindra.model.response.WebResponse;
 import com.unindra.service.PaymentDetailService;
@@ -10,10 +11,14 @@ import com.unindra.service.PaymentDetailService;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Locale;
 
+import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,6 +27,8 @@ public class PaymentDetailController {
 
     private final PaymentDetailService service;
 
+    private final MessageSource source;
+
     @PreAuthorize("hasRole('STAFF')")
     @GetMapping(path = "/staff/payment-details")
     public ResponseEntity<WebResponse<List<PaymentDetailResponse>>> get() {
@@ -29,6 +36,16 @@ public class PaymentDetailController {
                 WebResponse.<List<PaymentDetailResponse>>builder()
                         .data(service.getAll())
                         .build());
+    }
+
+    @PreAuthorize("hasRole('STAFF')")
+    @PostMapping(path = "/staff/payment-details")
+    public ResponseEntity<WebResponse<String>> add(@RequestBody PaymentDetailRequest request, Locale locale) {
+        return ResponseEntity.ok(
+                WebResponse.<String>builder()
+                        .message(source.getMessage("payment.detail.added.succesfully", null, locale))
+                        .build());
+
     }
 
 }

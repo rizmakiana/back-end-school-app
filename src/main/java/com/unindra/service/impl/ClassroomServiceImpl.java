@@ -83,4 +83,9 @@ public class ClassroomServiceImpl implements ClassroomService {
         repository.save(classroom);
     }
 
+    @Override
+    public Optional<Classroom> findByCode(String code) {
+        return repository.findByCode(code);
+    }
+
 }

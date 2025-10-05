@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 import com.unindra.entity.Classroom;
 import com.unindra.entity.Department;
 
-
 @Repository
 public interface ClassroomRepository extends JpaRepository<Classroom, String>{
 
@@ -17,4 +16,6 @@ public interface ClassroomRepository extends JpaRepository<Classroom, String>{
     boolean existsByDepartmentAndName(Department department, String name);
 
     Optional<Classroom> findByDepartmentAndName(Department department, String name);
+
+    Optional<Classroom> findByCode(String code);
 }

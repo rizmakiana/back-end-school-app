@@ -2,6 +2,7 @@ package com.unindra.service.impl;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,6 +81,11 @@ public class PaymentCategoryServiceImpl implements PaymentCategoryService {
                 .name(payment.getName())
                 .totalPaymentDetails(payment.getPaymentDetails().size())
                 .build();
+    }
+
+    @Override
+    public Optional<PaymentCategory> findByName(String name) {
+        return repository.findByName(name);
     }
 
 }
