@@ -11,5 +11,7 @@ public interface PaymentDetailService {
     List<PaymentDetailResponse> getAll();
 
     void add(PaymentDetailRequest request, Locale locale);
+
+    void delete(String id, Locale locale);
     
 }

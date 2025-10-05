@@ -84,4 +84,16 @@ public class PaymentDetailServiceImpl implements PaymentDetailService {
                 .build();
     }
 
+    @Override
+    public void delete(String id, Locale locale) {
+        PaymentDetail detail = repository.findById(id)
+                .orElseThrow(() -> ExceptionUtil.badRequest("payment.detail.not.found", locale));
+
+        if (!detail.getPayments().isEmpty()) {
+            throw ExceptionUtil.badRequest("payment.detail.cannot.delete.has.payments", locale);
+        }
+
+        repository.delete(detail);
+    }
+
 }
