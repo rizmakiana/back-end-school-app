@@ -5,7 +5,7 @@ import java.util.Locale;
 
 import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -26,24 +26,25 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(path = "/api/staff/courses")
+@RequestMapping(path = "/api")
 public class CourseController {
 
     private final CourseService service;
 
     private final MessageSource source;
 
-    @GetMapping
-    public ResponseEntity<WebResponse<List<CourseResponse>>> getAll(Authentication authentication) {
+    @PreAuthorize("hasRole('STAFF')")
+    @GetMapping(path = "/staff/courses")
+    public ResponseEntity<WebResponse<List<CourseResponse>>> getAll() {
         return ResponseEntity.ok(
                 WebResponse.<List<CourseResponse>>builder()
                         .data(service.getAll())
                         .build());
     }
 
-    @PostMapping
+    @PreAuthorize("hasRole('STAFF')")
+    @PostMapping(path = "/staff/courses")
     public ResponseEntity<WebResponse<String>> add(
-            Authentication authentication,
             @RequestBody CourseRequest request,
             Locale locale) {
         service.add(request, locale);
@@ -54,9 +55,9 @@ public class CourseController {
 
     }
 
-    @DeleteMapping(path = "/{id}")
+    @PreAuthorize("hasRole('STAFF')")
+    @DeleteMapping(path = "/staff/courses/{id}")
     public ResponseEntity<WebResponseBuilder<String>> delete(
-            Authentication authentication,
             @PathVariable String id,
             Locale locale) {
         service.delete(id, locale);
@@ -65,9 +66,9 @@ public class CourseController {
                         .message(source.getMessage("course.deleted", null, locale)));
     }
 
-    @PatchMapping(path = "/{id}")
+    @PreAuthorize("hasRole('STAFF')")
+    @PatchMapping(path = "/staff/courses/{id}")
     public ResponseEntity<WebResponse<String>> update(
-        Authentication authentication,
         @PathVariable String id,
         @RequestBody CourseUpdateRequest request,
         Locale locale
