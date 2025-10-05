@@ -12,4 +12,6 @@ public interface PaymentCategoryService {
 
     List<PaymentCategoryResponse> getAll();
 
+    void delete(String id, Locale locale);
+
 }

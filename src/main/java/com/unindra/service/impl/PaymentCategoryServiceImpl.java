@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.unindra.entity.PaymentCategory;
 import com.unindra.model.request.PaymentCategoryRequest;
@@ -42,6 +43,19 @@ public class PaymentCategoryServiceImpl implements PaymentCategoryService {
         return repository.findAll().stream()
                 .map(payment -> getResponse(payment))
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public void delete(String id, Locale locale) {
+        PaymentCategory payment = repository.findById(id)
+            .orElseThrow(() -> ExceptionUtil.badRequest("payment.category.notfound", locale));
+
+        if (!payment.getPaymentDetails().isEmpty()) {
+            throw ExceptionUtil.badRequest("payment.detail.exists", locale);
+        }
+
+        repository.delete(payment);
     }
 
     public PaymentCategoryResponse getResponse(PaymentCategory payment) {

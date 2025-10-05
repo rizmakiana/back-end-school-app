@@ -17,7 +17,10 @@ import com.unindra.model.response.WebResponse;
 import com.unindra.service.PaymentCategoryService;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequiredArgsConstructor
@@ -48,6 +51,16 @@ public class PaymentCategoryController {
         return ResponseEntity.ok(
                 WebResponse.<List<PaymentCategoryResponse>>builder()
                         .data(service.getAll())
+                        .build());
+    }
+
+    @PreAuthorize("hasRole('STAFF')")
+    @DeleteMapping(path = "/staff/sections/{id}")
+    public ResponseEntity<WebResponse<String>> delete(@PathVariable String id, Locale locale) {
+        service.delete(id, locale);
+        return ResponseEntity.ok(
+                WebResponse.<String>builder()
+                        .message(source.getMessage("payment.category.deleted", null, locale))
                         .build());
     }
 
