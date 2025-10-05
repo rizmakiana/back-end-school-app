@@ -1,5 +1,6 @@
 package com.unindra.controller;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.springframework.context.MessageSource;
@@ -11,10 +12,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.unindra.model.request.PaymentCategoryRequest;
+import com.unindra.model.response.PaymentCategoryResponse;
 import com.unindra.model.response.WebResponse;
 import com.unindra.service.PaymentCategoryService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
 @RequiredArgsConstructor
@@ -38,4 +41,14 @@ public class PaymentCategoryController {
                         .build());
 
     }
+
+    @PreAuthorize("hasRole('STAFF')")
+    @GetMapping(path = "/staff/payment-category")
+    public ResponseEntity<WebResponse<List<PaymentCategoryResponse>>> getAll() {
+        return ResponseEntity.ok(
+                WebResponse.<List<PaymentCategoryResponse>>builder()
+                        .data(service.getAll())
+                        .build());
+    }
+
 }
