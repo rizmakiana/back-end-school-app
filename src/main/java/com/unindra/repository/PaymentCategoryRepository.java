@@ -8,4 +8,6 @@ import com.unindra.entity.PaymentCategory;
 @Repository
 public interface PaymentCategoryRepository extends JpaRepository<PaymentCategory, String>{
     
+    boolean existsByName(String name);
+
 }

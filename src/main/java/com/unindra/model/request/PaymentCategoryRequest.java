@@ -1,5 +1,6 @@
 package com.unindra.model.request;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
 
@@ -7,6 +8,7 @@ import lombok.Data;
 @Builder
 public class PaymentCategoryRequest {
     
+    @NotBlank
     private String name;
     
 }
