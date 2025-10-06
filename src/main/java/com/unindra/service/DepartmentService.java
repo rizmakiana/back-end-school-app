@@ -19,4 +19,6 @@ public interface DepartmentService {
     void delete(String id, Locale locale);
 
     Optional<Department> findByName(String name);
+
+    DepartmentResponse getByCode(String code, Locale locale);
 }

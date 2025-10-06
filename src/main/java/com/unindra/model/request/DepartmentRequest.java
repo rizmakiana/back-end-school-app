@@ -8,9 +8,9 @@ import lombok.Data;
 @Builder
 public class DepartmentRequest {
     
-    @NotBlank(message = "department.name.notblank")
+    @NotBlank(message = "{department.name.notblank}")
     private String name;
     
-    @NotBlank(message = "department.code.notblank")
+    @NotBlank(message = "{department.code.notblank}")
     private String code;
 }

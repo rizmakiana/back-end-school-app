@@ -32,7 +32,6 @@ public class DepartmentServiceImpl implements DepartmentService {
     public List<DepartmentResponse> getAll() {
         return repository.findAll().stream()
                 .map(department -> DepartmentResponse.builder()
-                        .id(department.getId())
                         .name(department.getName())
                         .code(department.getCode())
                         .totalClassroom(department.getClassrooms().size())
@@ -131,6 +130,17 @@ public class DepartmentServiceImpl implements DepartmentService {
     public Optional<Department> findByName(String name) {
         System.out.println(repository.existsByName(name));
         return repository.findByName(name);
+    }
+
+    @Override
+    public DepartmentResponse getByCode(String code, Locale locale) {
+        return repository.findByCode(code)
+                .map(dept -> DepartmentResponse.builder()
+                        .name(dept.getName())
+                        .code(dept.getCode())
+                        .totalClassroom(dept.getClassrooms().size())
+                        .build())
+                .orElseThrow(() -> ExceptionUtil.badRequest("department.notfound",locale ));
     }
 
 }

@@ -1,6 +1,7 @@
 package com.unindra.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.unindra.model.request.DepartmentRequest;
@@ -29,57 +30,66 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping(path = "/api")
 public class DepartmentController {
 
-    private final DepartmentService service;
+	private final DepartmentService service;
 
-    private final MessageSource source;
+	private final MessageSource source;
 
-    @PreAuthorize("hasRole('STAFF')")
-    @GetMapping(path = "/staff/departments")
-    public ResponseEntity<WebResponse<List<DepartmentResponse>>> getAll(Authentication authentication) {
+	@PreAuthorize("hasRole('STAFF')")
+	@GetMapping(path = "/staff/departments")
+	public ResponseEntity<WebResponse<List<DepartmentResponse>>> getAll(Authentication authentication) {
 
-        WebResponse<List<DepartmentResponse>> response = WebResponse.<List<DepartmentResponse>>builder()
-                .data(service.getAll())
-                .build();
+		WebResponse<List<DepartmentResponse>> response = WebResponse.<List<DepartmentResponse>>builder()
+				.data(service.getAll())
+				.build();
 
-        return ResponseEntity.ok(response);
-    }
+		return ResponseEntity.ok(response);
+	}
 
-    @PreAuthorize("hasRole('STAFF')")
-    @PostMapping(path = "/staff/departments")
-    public ResponseEntity<WebResponse<String>> create(
-            @RequestBody DepartmentRequest request,
-            Authentication authentication,
-            Locale locale) {
+	@PreAuthorize("hasRole('STAFF')")
+	@PostMapping(path = "/staff/departments")
+	public ResponseEntity<WebResponse<String>> create(
+			@RequestBody DepartmentRequest request,
+			Authentication authentication,
+			Locale locale) {
 
-        service.add(request, locale);
-        return ResponseEntity.ok(WebResponse.<String>builder()
-                .message(source.getMessage("department.created", null, locale)).build());
-    }
+		service.add(request, locale);
+		return ResponseEntity.ok(WebResponse.<String>builder()
+				.message(source.getMessage("department.created", null, locale)).build());
+	}
 
-    @PreAuthorize("hasRole('STAFF')")
-    @PatchMapping(path = "/staff/departments/{id}")
-    public ResponseEntity<WebResponse<String>> update(
-            @PathVariable String id,
-            @RequestBody DepartmentRequest request,
-            Locale locale,
-            Authentication authentication) {
+	@PreAuthorize("hasRole('STAFF')")
+	@PatchMapping(path = "/staff/departments/{id}")
+	public ResponseEntity<WebResponse<String>> update(
+			@PathVariable String id,
+			@RequestBody DepartmentRequest request,
+			Locale locale,
+			Authentication authentication) {
 
-        service.update(id, request, locale);
-        return ResponseEntity.ok(WebResponse.<String>builder()
-                .message(source.getMessage("department.updated", null, locale))
-                .build());
-    }
+		service.update(id, request, locale);
+		return ResponseEntity.ok(WebResponse.<String>builder()
+				.message(source.getMessage("department.updated", null, locale))
+				.build());
+	}
 
-    @PreAuthorize("hasRole('STAFF')")
-    @DeleteMapping(path = "staff/departments/{id}")
-    public ResponseEntity<WebResponse<String>> delete(
-            @PathVariable String id,
-            Locale locale) {
+	@PreAuthorize("hasRole('STAFF')")
+	@DeleteMapping(path = "staff/departments/{id}")
+	public ResponseEntity<WebResponse<String>> delete(
+			@PathVariable String id,
+			Locale locale) {
 
-        service.delete(id, locale);
-        return ResponseEntity.ok(WebResponse.<String>builder()
-                .message(source.getMessage("department.deleted", null, locale))
-                .build());
-    }
+		service.delete(id, locale);
+		return ResponseEntity.ok(WebResponse.<String>builder()
+				.message(source.getMessage("department.deleted", null, locale))
+				.build());
+	}
+
+	@PreAuthorize("hasRole('STAFF')")
+	@GetMapping(path = "/staff/deparatments")
+	public void getByCode(@RequestParam String code, Locale locale) {
+		ResponseEntity.ok(
+				WebResponse.<DepartmentResponse>builder()
+						.data(service.getByCode(code, locale))
+						.build());
+	}
 
 }
