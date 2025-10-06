@@ -136,6 +136,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     public DepartmentResponse getByCode(String code, Locale locale) {
         return repository.findByCode(code)
                 .map(dept -> DepartmentResponse.builder()
+                        .id(dept.getId())
                         .name(dept.getName())
                         .code(dept.getCode())
                         .totalClassroom(dept.getClassrooms().size())

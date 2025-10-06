@@ -1,7 +1,6 @@
 package com.unindra.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.unindra.model.request.DepartmentRequest;
@@ -84,9 +83,9 @@ public class DepartmentController {
 	}
 
 	@PreAuthorize("hasRole('STAFF')")
-	@GetMapping(path = "/staff/deparatments")
-	public void getByCode(@RequestParam String code, Locale locale) {
-		ResponseEntity.ok(
+	@GetMapping(path = "/staff/departments/{code}")
+	public ResponseEntity<WebResponse<DepartmentResponse>> getByCode(@PathVariable String code, Locale locale) {
+		return ResponseEntity.ok(
 				WebResponse.<DepartmentResponse>builder()
 						.data(service.getByCode(code, locale))
 						.build());
