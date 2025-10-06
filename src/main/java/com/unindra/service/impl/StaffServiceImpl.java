@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.Locale;
 import java.util.Optional;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +13,7 @@ import com.unindra.entity.District;
 import com.unindra.entity.Regency;
 import com.unindra.entity.Staff;
 import com.unindra.model.request.RegisterStaffRequest;
+import com.unindra.model.response.StaffResponse;
 import com.unindra.model.util.Role;
 import com.unindra.repository.StaffRepository;
 import com.unindra.service.DistrictService;
@@ -25,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class StaffServiceImpl implements StaffService {
-    
+
     private final StaffRepository repository;
 
     private final ValidationService validationService;
@@ -78,7 +80,7 @@ public class StaffServiceImpl implements StaffService {
         staff.setBirthDate(birthDate);
         staff.setDistrictAddress(district);
         staff.setAddress(request.getAddress());
-        staff.setUsername(request.getUsername()); 
+        staff.setUsername(request.getUsername());
         staff.setPassword(passwordEncoder.encode(request.getPassword()));
         staff.setEmail(request.getEmail());
         staff.setPhoneNumber(request.getPhoneNumber());
@@ -89,15 +91,15 @@ public class StaffServiceImpl implements StaffService {
 
     @Override
     public Optional<Staff> findAccount(String args) {
-        
+
         if (isPhoneNumberExists(args)) {
             return repository.findByPhoneNumber(args);
         }
-        
+
         if (isEmailExists(args)) {
             return repository.findByEmail(args);
         }
-        
+
         return repository.findByUsername(args);
 
     }
@@ -113,5 +115,31 @@ public class StaffServiceImpl implements StaffService {
     public boolean isEmailExists(String email) {
         return repository.existsByEmail(email);
     }
-    
+
+    @Override
+    public StaffResponse getCurrentStaff(Authentication authentication, Locale locale) {
+        String username = authentication.getName();
+
+        Staff staff = repository.findByUsername(username)
+                .orElseThrow(() -> ExceptionUtil.badRequest("staff.notfound", locale));
+
+        return getStaffResponse(staff);
+    }
+
+    public StaffResponse getStaffResponse(Staff staff) {
+        return StaffResponse.builder()
+                .id(staff.getId())
+                .name(staff.getName())
+                .gender(staff.getGender())
+                .birthPlaceRegency(staff.getBirthplace().getId())
+                .birthDate(String.valueOf(staff.getBirthDate().getDayOfMonth()))
+                .birthMonth(staff.getBirthDate().getMonthValue())
+                .birthYear(String.valueOf(staff.getBirthDate().getYear()))
+                .districtAddress(staff.getDistrictAddress().getId())
+                .address(staff.getAddress())
+                .username(staff.getUsername())
+                .email(staff.getEmail())
+                .phoneNumber(staff.getPhoneNumber())
+                .build();
+    }
 }
