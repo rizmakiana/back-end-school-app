@@ -19,7 +19,6 @@ import com.unindra.model.request.CourseRequest;
 import com.unindra.model.request.CourseResponse;
 import com.unindra.model.request.CourseUpdateRequest;
 import com.unindra.model.response.WebResponse;
-import com.unindra.model.response.WebResponse.WebResponseBuilder;
 import com.unindra.service.CourseService;
 
 import lombok.RequiredArgsConstructor;
@@ -57,13 +56,14 @@ public class CourseController {
 
     @PreAuthorize("hasRole('STAFF')")
     @DeleteMapping(path = "/staff/courses/{id}")
-    public ResponseEntity<WebResponseBuilder<String>> delete(
+    public ResponseEntity<WebResponse<String>> delete(
             @PathVariable String id,
             Locale locale) {
         service.delete(id, locale);
         return ResponseEntity.ok(
                 WebResponse.<String>builder()
-                        .message(source.getMessage("course.deleted", null, locale)));
+                        .message(source.getMessage("course.deleted", null, locale))
+                        .build());
     }
 
     @PreAuthorize("hasRole('STAFF')")
