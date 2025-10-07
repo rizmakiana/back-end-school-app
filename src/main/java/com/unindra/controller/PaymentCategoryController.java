@@ -76,4 +76,13 @@ public class PaymentCategoryController {
         );
     }
 
+    @PreAuthorize("hasRole('STAFF')")
+    @GetMapping(path = "/staff/payment-category/{name}")
+    public ResponseEntity<WebResponse<PaymentCategoryResponse>> getByName(@PathVariable String name, Locale locale) {
+        return ResponseEntity.ok(
+                WebResponse.<PaymentCategoryResponse>builder()
+                        .data(service.getByName(name, locale))
+                        .build());
+    }
+
 }

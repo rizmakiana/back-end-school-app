@@ -61,6 +61,7 @@ public class PaymentCategoryServiceImpl implements PaymentCategoryService {
 
     @Override
     public void update(String id, PaymentCategoryRequest request, Locale locale) {
+        validationService.validate(request);
 
         PaymentCategory payment = repository.findById(id)
                 .orElseThrow(() -> ExceptionUtil.badRequest("payment.category.notfound", locale));
@@ -86,6 +87,13 @@ public class PaymentCategoryServiceImpl implements PaymentCategoryService {
     @Override
     public Optional<PaymentCategory> findByName(String name) {
         return repository.findByName(name);
+    }
+
+    @Override
+    public PaymentCategoryResponse getByName(String name, Locale locale) {
+        return repository.findByName(name)
+                .map(category -> getResponse(category))
+                .orElseThrow(() -> ExceptionUtil.badRequest("payment.category.notfound", locale));
     }
 
 }

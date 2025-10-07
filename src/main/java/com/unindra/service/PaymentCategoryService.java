@@ -20,4 +20,6 @@ public interface PaymentCategoryService {
 
     Optional<PaymentCategory> findByName(String name);
 
+    PaymentCategoryResponse getByName(String name, Locale locale);
+
 }
