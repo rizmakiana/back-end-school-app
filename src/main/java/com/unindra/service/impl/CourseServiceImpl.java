@@ -122,8 +122,15 @@ public class CourseServiceImpl implements CourseService {
 
     @Transactional
     public String generateCode(Department department, Classroom classroom) {
+        int max = 0;
+        for (Course course : classroom.getCourses()) {
+            if (Integer.parseInt(course.getCode()) > max) {
+                max = Integer.parseInt(course.getCode());
+            }
+        }
+        String code = String.valueOf(max);
         // example format code: MIPA10-1, MIPA10-2, MIPA10-3
-        return String.format("%s%s-%d", department.getCode(), classroom.getName(), classroom.getCourses().size() + 1);
+        return String.format("%s%s-%d", department.getCode(), classroom.getName(), code + 1);
     }
 
     private String generateCode(Department department, Classroom classroom, long currentCount) {
