@@ -7,6 +7,8 @@ import com.unindra.entity.PaymentDetail;
 
 import com.unindra.entity.PaymentCategory;
 import com.unindra.entity.Classroom;
+import java.util.Optional;
+
 
 
 
@@ -14,4 +16,6 @@ import com.unindra.entity.Classroom;
 public interface PaymentDetailRepository extends JpaRepository<PaymentDetail, String>{
     
     boolean existsByPaymentCategoryAndClassroomAndName(PaymentCategory paymentCategory, Classroom classroom, String name);
+
+    Optional<PaymentDetail> findByPaymentCategoryAndClassroomAndName(PaymentCategory paymentCategory, Classroom classroom, String name);
 }

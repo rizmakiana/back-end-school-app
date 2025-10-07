@@ -11,6 +11,7 @@ import com.unindra.entity.Classroom;
 import com.unindra.entity.PaymentCategory;
 import com.unindra.entity.PaymentDetail;
 import com.unindra.model.request.PaymentDetailRequest;
+import com.unindra.model.request.PaymentDetailUpdate;
 import com.unindra.model.response.PaymentDetailResponse;
 import com.unindra.repository.PaymentDetailRepository;
 import com.unindra.service.ClassroomService;
@@ -97,7 +98,7 @@ public class PaymentDetailServiceImpl implements PaymentDetailService {
     }
 
     @Override
-    public void update(String id, PaymentDetailRequest request, Locale locale) {
+    public void update(String id, PaymentDetailUpdate request, Locale locale) {
         validationService.validate(request);
 
         PaymentDetail detail = repository.findById(id)
@@ -105,28 +106,9 @@ public class PaymentDetailServiceImpl implements PaymentDetailService {
 
         boolean hasPayments = !detail.getPayments().isEmpty();
 
-        // kalo sudah ada payment dan category nya berubah
-        if (hasPayments && !detail.getPaymentCategory().getName().equals(request.getCategory())) {
-            throw ExceptionUtil.badRequest("payment.detail.cannot.moved.to.other.category", locale);
-        }
-
-        // kalo sudah ada payment dan classroom code nya berubah
-        if (hasPayments && !request.getClassroomCode().equals(detail.getClassroom().getCode())) {
-            throw ExceptionUtil.badRequest("payment.detail.cannot.moved.to.other.classroom", locale);
-        }
-        
         // kalo sudah ada payment dan amount nya berubah
         if (hasPayments && !request.getAmount().equals(detail.getAmount().toPlainString())) {
-            throw ExceptionUtil.badRequest("payment.detail.amount.cannot.moved", locale);   
-        }
-
-        PaymentCategory category = paymentCategoryService.findByName(request.getCategory())
-                .orElseThrow(() -> ExceptionUtil.badRequest("payment.category.notfound", locale));
-
-        // kalo sudah ada nama pembayaran di category dan classroom baru
-        Classroom classroom = classroomService.findByCode(request.getClassroomCode()).orElse(null);
-        if (repository.existsByPaymentCategoryAndClassroomAndName(category, classroom, request.getName())) {
-            throw ExceptionUtil.badRequest("payment.detail.already.exists", locale);
+            throw ExceptionUtil.badRequest("payment.detail.amount.cannot.updated", locale);
         }
 
         BigDecimal amount = Optional.ofNullable(request.getAmount())
@@ -140,12 +122,25 @@ public class PaymentDetailServiceImpl implements PaymentDetailService {
                 .filter(a -> a.compareTo(BigDecimal.ZERO) > 0)
                 .orElseThrow(() -> ExceptionUtil.badRequest("payment.amount.must.be.positive", locale));
 
-        detail.setPaymentCategory(category);
-        detail.setClassroom(classroom);
         detail.setName(request.getName());
         detail.setAmount(amount);
 
         repository.save(detail);
+    }
+
+    @Override
+    public String getByField(String query, Locale locale) {
+        String[] queries = query.split("-");
+
+        PaymentCategory category = paymentCategoryService.findByName(queries[0])
+                .orElseThrow(() -> ExceptionUtil.badRequest("payment.category.notfound", locale));
+
+        Classroom classroom = classroomService.findByCode(queries[1]).orElse(null);
+
+        return repository.findByPaymentCategoryAndClassroomAndName(category, classroom, queries[2])
+                .map(payment -> getResponse(payment))
+                .orElseThrow(() -> ExceptionUtil.notFound("payment.detail.not.found", locale))
+                .getId();
     }
 
 }

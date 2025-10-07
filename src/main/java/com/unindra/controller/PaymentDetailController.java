@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.unindra.model.request.PaymentDetailRequest;
+import com.unindra.model.request.PaymentDetailUpdate;
 import com.unindra.model.response.PaymentDetailResponse;
 import com.unindra.model.response.WebResponse;
 import com.unindra.service.PaymentDetailService;
@@ -54,9 +55,9 @@ public class PaymentDetailController {
 
     @PreAuthorize("hasRole('STAFF')")
     @DeleteMapping(path = "/staff/payment-details/{id}")
-    public void delete(@PathVariable String id, Locale locale) {
+    public ResponseEntity<WebResponse<String>> delete(@PathVariable String id, Locale locale) {
         service.delete(id, locale);
-        ResponseEntity.ok(
+        return ResponseEntity.ok(
                 WebResponse.<String>builder()
                         .message(source.getMessage("payment.detail.deleted", null, locale))
                         .build());
@@ -65,11 +66,20 @@ public class PaymentDetailController {
 
     @PreAuthorize("hasRole('STAFF')")
     @PatchMapping(path = "/staff/payment-details/{id}")
-    public void update(@PathVariable String id, @RequestBody PaymentDetailRequest request, Locale locale) {
+    public ResponseEntity<WebResponse<String>> update(@PathVariable String id, @RequestBody PaymentDetailUpdate request, Locale locale) {
         service.update(id, request, locale);
-        ResponseEntity.ok(
+        return ResponseEntity.ok(
                 WebResponse.<String>builder()
                         .message(source.getMessage("payment.detail.updated", null, locale))
+                        .build());
+    }
+
+    @PreAuthorize("hasRole('STAFF')")
+    @GetMapping(path = "/staff/payment-details/{query}")
+    public ResponseEntity<WebResponse<String>> getId(@PathVariable String query, Locale locale) {
+        return ResponseEntity.ok(
+                WebResponse.<String>builder()
+                        .data(service.getByField(query, locale))
                         .build());
     }
 }
