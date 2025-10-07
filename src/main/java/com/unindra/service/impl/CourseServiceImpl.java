@@ -134,8 +134,8 @@ public class CourseServiceImpl implements CourseService {
     }
 
     private String generateCode(Department department, Classroom classroom, long currentCount) {
-        // contoh: MIPA10-1, MIPA10-2, dst.
-        return String.format("%s%s-%d",
+        // contoh: MIPA10-01, MIPA10-02, dst.
+        return String.format("%s%s-%02d",
                 department.getCode(),
                 classroom.getName(),
                 currentCount + 1);

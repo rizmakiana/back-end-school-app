@@ -1,6 +1,7 @@
 package com.unindra.model.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
 import lombok.Data;
 
@@ -12,6 +13,7 @@ public class CourseUpdateRequest {
     private String name;
 
     @NotBlank
+    @Pattern(regexp = "^\\d{1,2}$")
     private String code;
 
 }
