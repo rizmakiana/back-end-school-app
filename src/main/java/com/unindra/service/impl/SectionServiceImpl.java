@@ -57,7 +57,7 @@ public class SectionServiceImpl implements SectionService {
         Classroom classroom = classroomService.findByDepartmentAndName(department, request.getClassroomName())
                 .orElseThrow(() -> ExceptionUtil.badRequest("classroom.notfound", locale));
 
-        Character name = getSectionNameList(department, classroom.getName());
+        Character name = getSectionNameList(classroom);
         Section section = new Section();
         section.setClassroom(classroom);
         section.setName(name);
@@ -105,12 +105,7 @@ public class SectionServiceImpl implements SectionService {
     }
 
     @Transactional(readOnly = true)
-    public Character getSectionNameList(Department department, String classroomName) {
-        Classroom classroom = department.getClassrooms().stream()
-                .filter(c -> c.getName().equals(classroomName))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Classroom not found"));
-
+    public Character getSectionNameList(Classroom classroom) {
         char last = 'A' - 1; // supaya kalau belum ada section, hasilnya 'A'
         for (Section section : classroom.getSections()) {
             if (section.getName() > last) {
