@@ -13,6 +13,8 @@ public class ClassroomResponse {
 
     private String name;
 
+    private String code;
+
     private Integer totalSection;
 
 }

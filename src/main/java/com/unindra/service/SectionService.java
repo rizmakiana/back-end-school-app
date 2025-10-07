@@ -19,5 +19,7 @@ public interface SectionService {
     void delete(String id, Locale locale);
 
     void save(Section section);
+
+    SectionResponse getByCode(String code, Locale locale);
     
 }

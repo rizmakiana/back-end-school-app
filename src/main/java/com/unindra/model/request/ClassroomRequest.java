@@ -14,7 +14,6 @@ public class ClassroomRequest {
     @NotBlank(message = "{classroom.name.notblank}")
     private String classroomName;
 
-    @NotBlank(message = "{classroom.code.notblank}")
     private String code;
 
     

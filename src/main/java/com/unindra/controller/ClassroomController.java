@@ -66,4 +66,14 @@ public class ClassroomController {
 						.build());
 
 	}
+
+	@PreAuthorize("hasRole('STAFF')")
+	@GetMapping(path = "/staff/classrooms/{code}")
+	public ResponseEntity<WebResponse<ClassroomResponse>> getByCode(@PathVariable String code, Locale locale) {
+		return ResponseEntity.ok(
+				WebResponse.<ClassroomResponse>builder()
+						.data(service.getByCode(code, locale))
+						.build());
+
+	}
 }

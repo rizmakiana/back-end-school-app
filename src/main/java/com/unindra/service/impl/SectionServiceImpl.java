@@ -126,4 +126,18 @@ public class SectionServiceImpl implements SectionService {
         repository.save(section);
     }
 
+    @Override
+    public SectionResponse getByCode(String code, Locale locale) {
+        return repository.findByCode(code)
+                .map(section -> SectionResponse.builder()
+                        .id(section.getId())
+                        .departmentName(section.getClassroom().getDepartment().getName())
+                        .classroomName(section.getClassroom().getName())
+                        .name(section.getName())
+                        .code(section.getCode())
+                        .totalStudent(section.getStudents().size())
+                        .build())
+                .orElseThrow(() -> ExceptionUtil.notFound("section.notfound", locale));
+    }
+
 }

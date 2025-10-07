@@ -79,4 +79,13 @@ public class SectionController {
 
 	}
 
+	@PreAuthorize("hasRole('STAFF')")
+	@GetMapping(path = "/staff/sections/{code}")
+	public ResponseEntity<WebResponse<SectionResponse>> getByCode(@PathVariable String code, Locale locale) {
+		return ResponseEntity.ok(
+				WebResponse.<SectionResponse>builder()
+				.data(service.getByCode(code, locale))
+						.build());
+	}
+
 }

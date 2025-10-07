@@ -36,6 +36,7 @@ public class ClassroomServiceImpl implements ClassroomService {
                         .id(classroom.getId())
                         .departmentName(classroom.getDepartment().getName())
                         .name(classroom.getName())
+                        .code(classroom.getCode())
                         .totalSection(classroom.getSections().size())
                         .build())
                 .toList();
@@ -64,10 +65,10 @@ public class ClassroomServiceImpl implements ClassroomService {
     @Override
     public void delete(String id, Locale locale) {
         Classroom classroom = repository.findById(id)
-                    .orElseThrow(() -> ExceptionUtil.notFound("classroom.notfound", locale));
+                .orElseThrow(() -> ExceptionUtil.notFound("classroom.notfound", locale));
 
         if (!classroom.getSections().isEmpty()) {
-            throw ExceptionUtil.badRequest("cant.delete.classroom", locale);
+            throw ExceptionUtil.badRequest("classroom.cant.delete", locale);
         }
 
         repository.delete(classroom);
@@ -86,6 +87,18 @@ public class ClassroomServiceImpl implements ClassroomService {
     @Override
     public Optional<Classroom> findByCode(String code) {
         return repository.findByCode(code);
+    }
+
+    @Override
+    public ClassroomResponse getByCode(String code, Locale locale) {
+        return repository.findByCode(code)
+                .map(classroom -> ClassroomResponse.builder()
+                        .id(classroom.getId())
+                        .departmentName(classroom.getDepartment().getName())
+                        .name(classroom.getName())
+                        .totalSection(classroom.getSections().size())
+                        .build())
+                .orElseThrow(() -> ExceptionUtil.badRequest("classroom.notfound", locale));
     }
 
 }
