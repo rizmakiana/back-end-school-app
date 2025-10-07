@@ -140,4 +140,16 @@ public class CourseServiceImpl implements CourseService {
                 classroom.getName(),
                 currentCount + 1);
     }
+
+    @Override
+    public CourseResponse getByCode(String code, Locale locale) {
+        return repository.findByCode(code)
+                .map(c -> CourseResponse.builder()
+                .id(c.getId())
+                .departmentName(c.getClassroom().getDepartment().getName())
+                .classroomName(c.getClassroom().getName())
+                .code(c.getCode())
+                .build())
+            .orElseThrow(() -> ExceptionUtil.badRequest("course.notfound", locale));
+    }
 }

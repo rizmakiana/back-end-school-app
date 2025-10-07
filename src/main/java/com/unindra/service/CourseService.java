@@ -16,4 +16,6 @@ public interface CourseService {
     void update(String id, CourseUpdateRequest request, Locale locale);
 
     void delete(String id, Locale locale);
+
+    CourseResponse getByCode(String code, Locale locale);
 }

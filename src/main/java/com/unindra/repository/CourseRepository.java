@@ -24,6 +24,8 @@ public interface CourseRepository extends JpaRepository<Course, String> {
 
     Optional<Course> findByClassroomAndCode(Classroom classroom, String code);
 
+    Optional<Course> findByCode(String code);
+
     @Query("SELECT c FROM Course c " +
             "WHERE c.id NOT IN (" +
             "SELECT ta.course.id FROM TeachingAssignment ta " +

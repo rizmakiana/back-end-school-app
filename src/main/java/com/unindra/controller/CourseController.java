@@ -80,4 +80,13 @@ public class CourseController {
                     .build()
         );
     }
+
+    @PreAuthorize("hasRole('STAFF')")
+    @GetMapping(path = "/staff/courses/{code}")
+    public ResponseEntity<WebResponse<CourseResponse>> getByCode(@PathVariable String code, Locale locale) {
+        return ResponseEntity.ok(
+                WebResponse.<CourseResponse>builder()
+                        .data(service.getByCode(code, locale))
+                        .build());
+    }
 }
