@@ -57,9 +57,7 @@ public class CourseServiceImpl implements CourseService {
             throw ExceptionUtil.badRequest("course.name.already.exists", locale);
         }
 
-        // hitung jumlah course di classroom untuk generate code
-        long count = repository.countByClassroom(classroom);
-        String code = generateCode(department, classroom, count);
+        String code = generateCode(department.getCode(), classroom);
 
         Course course = new Course();
         course.setClassroom(classroom);
@@ -87,16 +85,8 @@ public class CourseServiceImpl implements CourseService {
                     }
                 });
 
-        // cek duplikat kode (exclude course yang sedang diupdate)
-        repository.findByClassroomAndCode(classroom, request.getCode())
-                .ifPresent(existing -> {
-                    if (!existing.getId().equals(course.getId())) {
-                        throw ExceptionUtil.badRequest("course.code.already.exists", locale);
-                    }
-                });
 
         course.setName(request.getName());
-        course.setCode(request.getCode());
 
         repository.save(course);
     }
@@ -121,24 +111,15 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Transactional
-    public String generateCode(Department department, Classroom classroom) {
+    public String generateCode(String deptName, Classroom classroom) {
         int max = 0;
         for (Course course : classroom.getCourses()) {
-            if (Integer.parseInt(course.getCode()) > max) {
-                max = Integer.parseInt(course.getCode());
+            String[] names = course.getCode().split("-");
+            if (Integer.parseInt(names[1]) > max) {
+                max = Integer.parseInt(names[1]);
             }
         }
-        String code = String.valueOf(max);
-        // example format code: MIPA10-1, MIPA10-2, MIPA10-3
-        return String.format("%s%s-%d", department.getCode(), classroom.getName(), code + 1);
-    }
-
-    private String generateCode(Department department, Classroom classroom, long currentCount) {
-        // contoh: MIPA10-01, MIPA10-02, dst.
-        return String.format("%s%s-%02d",
-                department.getCode(),
-                classroom.getName(),
-                currentCount + 1);
+        return String.format("%s%s-%02d", deptName, classroom.getName(), max + 1);
     }
 
     @Override
@@ -149,6 +130,7 @@ public class CourseServiceImpl implements CourseService {
                 .departmentName(c.getClassroom().getDepartment().getName())
                 .classroomName(c.getClassroom().getName())
                 .code(c.getCode())
+                .name(c.getName())
                 .build())
             .orElseThrow(() -> ExceptionUtil.badRequest("course.notfound", locale));
     }
