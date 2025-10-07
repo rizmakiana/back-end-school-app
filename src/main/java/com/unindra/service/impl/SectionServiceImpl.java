@@ -57,7 +57,7 @@ public class SectionServiceImpl implements SectionService {
         Classroom classroom = classroomService.findByDepartmentAndName(department, request.getClassroomName())
                 .orElseThrow(() -> ExceptionUtil.badRequest("classroom.notfound", locale));
 
-        Character name = getSectionNameList(classroom);
+        Character name = getSectionNameList(classroom, locale);
         Section section = new Section();
         section.setClassroom(classroom);
         section.setName(name);
@@ -105,12 +105,15 @@ public class SectionServiceImpl implements SectionService {
     }
 
     @Transactional(readOnly = true)
-    public Character getSectionNameList(Classroom classroom) {
+    public Character getSectionNameList(Classroom classroom, Locale locale) {
         char last = 'A' - 1; // supaya kalau belum ada section, hasilnya 'A'
         for (Section section : classroom.getSections()) {
             if (section.getName() > last) {
                 last = section.getName();
             }
+        }
+        if (last == 'Z') {
+            throw ExceptionUtil.badRequest("section.max", locale);
         }
 
         return (char) (last + 1); // next huruf
