@@ -2,8 +2,10 @@ package com.unindra.service.impl;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
+import java.time.Year;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,7 +19,8 @@ import com.unindra.entity.Section;
 import com.unindra.entity.Student;
 import com.unindra.model.request.StudentRequest;
 import com.unindra.model.request.StudentUpdate;
-import com.unindra.model.response.StudentResponse;
+import com.unindra.model.response.StudentResponseTable;
+import com.unindra.model.util.Role;
 import com.unindra.repository.StudentRepository;
 import com.unindra.service.DepartmentService;
 import com.unindra.service.DistrictService;
@@ -25,9 +28,12 @@ import com.unindra.service.RegencyService;
 import com.unindra.service.StudentService;
 import com.unindra.service.ValidationService;
 import com.unindra.util.ExceptionUtil;
+import com.unindra.util.TimeFormat;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StudentServiceImpl implements StudentService {
@@ -36,18 +42,18 @@ public class StudentServiceImpl implements StudentService {
 
     private final ValidationService validationService;
 
-    private RegencyService regencyService;
+    private final RegencyService regencyService;
 
-    private DistrictService districtService;
+    private final DistrictService districtService;
 
-    private DepartmentService departmentService;
+    private final DepartmentService departmentService;
 
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public List<StudentResponse> getAll() {
+    public List<StudentResponseTable> getAll() {
         return repository.findAll().stream()
-                .map(student -> generateStudentResponse(student))
+                .map(student -> generateStudentResponseTable(student))
                 .toList();
     }
 
@@ -56,11 +62,7 @@ public class StudentServiceImpl implements StudentService {
     public void add(StudentRequest request, Locale locale) {
         validationService.validate(request);
 
-        boolean isPasswordEquals = request.getPassword().equals(request.getConfirmPassword());
-        if (!isPasswordEquals) {
-            throw ExceptionUtil.badRequest("password.not.equals", locale);
-        }
-
+        System.out.println("STARTTT");
         LocalDate birthDate;
         try {
             birthDate = LocalDate.of(
@@ -71,11 +73,13 @@ public class StudentServiceImpl implements StudentService {
             throw ExceptionUtil.badRequest("invalid.date", locale);
         }
 
+        log.info("Regency ID : {}", request.getBirthPlaceRegency());
         Regency regency = regencyService.findById(request.getBirthPlaceRegency())
-                .orElseThrow(() -> ExceptionUtil.notFound("regency.notfound", locale));
-
+        .orElseThrow(() -> ExceptionUtil.badRequest("regency.notfound", locale));
+        
+        log.info("District ID : {}", request.getDistrictAddress());
         District district = districtService.findById(request.getDistrictAddress())
-                .orElseThrow(() -> ExceptionUtil.notFound("district.notfound", locale));
+                .orElseThrow(() -> ExceptionUtil.badRequest("district.notfound", locale));
 
         if (existsByUsername(request.getUsername())) {
             throw ExceptionUtil.badRequest("username.already.exists", locale);
@@ -102,6 +106,7 @@ public class StudentServiceImpl implements StudentService {
 
         Student student = new Student();
 
+        student.setStudentId(generateNextStudentId());
         student.setName(request.getName());
         student.setGender(request.getGender());
         student.setBirthplace(regency);
@@ -109,12 +114,14 @@ public class StudentServiceImpl implements StudentService {
         student.setDistrictAddress(district);
         student.setAddress(request.getAddress());
         student.setUsername(request.getUsername());
-        student.setPassword(passwordEncoder.encode(request.getPassword()));
+        student.setPassword(passwordEncoder.encode(birthDate.format(TimeFormat.formatter)));
         student.setEmail(request.getEmail());
         student.setPhoneNumber(request.getPhoneNumber());
         student.setSection(section);
+        student.setRole(Role.STUDENT);
 
         repository.save(student);
+        System.out.println("ENNNDDDDDDDDDDD");
     }
 
     @Override
@@ -195,18 +202,13 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Transactional
-    public StudentResponse generateStudentResponse(Student student) {
-        return StudentResponse.builder()
-                .id(student.getId())
+    public StudentResponseTable generateStudentResponseTable(Student student) {
+        return StudentResponseTable.builder()
+                .studentId(student.getStudentId())
                 .name(student.getName())
                 .gender(student.getGender())
-                .birthPlace(student.getBirthplace().getId())
-                .birthDate(student.getBirthDate())
-                .districtAddress(student.getDistrictAddress().getId())
-                .address(student.getAddress())
-                .username(student.getUsername())
-                .email(student.getEmail())
-                .phoneNumber(student.getPhoneNumber())
+                // .birthPlace(student.getBirthplace().getName())
+                .birthDate(student.getBirthDate().format(TimeFormat.formatter2))
                 .departmentName(student.getSection().getClassroom().getDepartment().getName())
                 .classroomName(student.getSection().getClassroom().getName())
                 .sectionName(String.valueOf(student.getSection().getName()))
@@ -223,5 +225,33 @@ public class StudentServiceImpl implements StudentService {
 
     public boolean existsByPhoneNumber(String phoneNumber) {
         return repository.existsByPhoneNumber(phoneNumber);
+    }
+
+    public String generateNextStudentId() {
+        String prefix = String.valueOf(Year.now().getValue());
+
+        // Ambil ID terbesar di DB
+        Optional<String> lastIdOpt = repository.findMaxStudentId();
+
+        if (lastIdOpt.isEmpty()) {
+            return prefix + "0001"; // kalau belum ada data sama sekali
+        }
+
+        String lastId = lastIdOpt.get();
+
+        // Pisahkan tahun dari urutan
+        String lastYearPart = lastId.substring(0, 4);
+        String lastNumberPart = lastId.substring(4);
+
+        int nextNumber;
+        if (lastYearPart.equals(prefix)) {
+            // masih di tahun yang sama → lanjut increment
+            nextNumber = Integer.parseInt(lastNumberPart) + 1;
+        } else {
+            // tahun baru → mulai dari 1 lagi
+            nextNumber = 1;
+        }
+
+        return String.format("%s%04d", prefix, nextNumber);
     }
 }

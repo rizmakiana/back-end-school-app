@@ -2,6 +2,7 @@ package com.unindra.entity;
 
 import java.util.List;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -15,6 +16,9 @@ import lombok.Setter;
 @Entity
 @Table(name = "students")
 public class Student extends User{
+
+    @Column(name = "student_id", unique = true)
+    private String studentId;
 
     @ManyToOne
     @JoinColumn(name = "birthplace_id", insertable = false, updatable = false)

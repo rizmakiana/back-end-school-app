@@ -5,11 +5,11 @@ import java.util.Locale;
 
 import com.unindra.model.request.StudentRequest;
 import com.unindra.model.request.StudentUpdate;
-import com.unindra.model.response.StudentResponse;
+import com.unindra.model.response.StudentResponseTable;
 
 public interface StudentService {
     
-    List<StudentResponse> getAll();
+    List<StudentResponseTable> getAll();
 
     void add(StudentRequest request, Locale locale);
     

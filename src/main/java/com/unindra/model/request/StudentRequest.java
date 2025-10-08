@@ -42,12 +42,6 @@ public class StudentRequest {
     @NotBlank(message = "{username.notblank}")
     private String username;
 
-    @NotBlank(message = "{password.notblank}")
-    private String password;
-
-    @NotBlank(message = "{confirm.password.notblank}")
-    private String confirmPassword;
-
     @Email(message = "{email.notvalid}")
     @NotBlank(message = "{email.notblank}")
     private String email;

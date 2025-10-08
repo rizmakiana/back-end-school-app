@@ -1,7 +1,5 @@
 package com.unindra.model.response;
 
-import java.time.LocalDate;
-
 import com.unindra.model.util.Gender;
 
 import lombok.Builder;
@@ -9,7 +7,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class StudentResponse {
+public class StudentResponseTable {
     
     private String studentId;
 
@@ -19,17 +17,7 @@ public class StudentResponse {
 
     private String birthPlace;
 
-    private LocalDate birthDate;
-
-    private String districtAddress;
-
-    private String address;
-
-    private String username;
-
-    private String email;
-
-    private String phoneNumber;
+    private String birthDate;
 
     private String departmentName;
 

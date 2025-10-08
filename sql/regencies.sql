@@ -1,4 +1,4 @@
-INSERT INTO regencies VALUES
+INSERT INTO regencies (id, province_id, name)VALUES
 ('1101', '11', 'KAB. ACEH SELATAN'),
 ('1102', '11', 'KAB. ACEH TENGGARA'),
 ('1103', '11', 'KAB. ACEH TIMUR'),

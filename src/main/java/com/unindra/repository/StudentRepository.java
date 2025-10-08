@@ -1,6 +1,7 @@
 package com.unindra.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.unindra.entity.Student;
@@ -21,5 +22,8 @@ public interface StudentRepository extends JpaRepository<Student, String>{
     Optional<Student> findByEmail(String email);
 
     Optional<Student> findByPhoneNumber(String phoneNumber);
+
+    @Query(value = "SELECT MAX(CAST(student_id AS UNSIGNED)) FROM students", nativeQuery = true)
+    Optional<String> findMaxStudentId();
 
 }

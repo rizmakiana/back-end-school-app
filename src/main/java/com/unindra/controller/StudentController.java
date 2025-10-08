@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.unindra.model.request.StudentRequest;
 import com.unindra.model.request.StudentUpdate;
-import com.unindra.model.response.StudentResponse;
+import com.unindra.model.response.StudentResponseTable;
 import com.unindra.model.response.WebResponse;
 import com.unindra.model.response.WebResponse.WebResponseBuilder;
 import com.unindra.service.StudentService;
@@ -34,9 +34,9 @@ public class StudentController {
     private final MessageSource source;
 
     @GetMapping(path = "/staff/students")
-    public ResponseEntity<WebResponse<List<StudentResponse>>> getAll(Authentication authentication) {
+    public ResponseEntity<WebResponse<List<StudentResponseTable>>> getAll(Authentication authentication) {
         return ResponseEntity.ok(
-                WebResponse.<List<StudentResponse>>builder()
+                WebResponse.<List<StudentResponseTable>>builder()
                         .data(service.getAll())
                         .build());
     }
