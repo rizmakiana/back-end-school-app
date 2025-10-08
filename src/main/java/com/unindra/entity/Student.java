@@ -21,14 +21,6 @@ public class Student extends User{
     private String studentId;
 
     @ManyToOne
-    @JoinColumn(name = "birthplace_id", insertable = false, updatable = false)
-    private Regency birthplace;
-
-    @ManyToOne
-    @JoinColumn(name = "district_address_id", insertable = false, updatable = false)
-    private District districtAddress;
-
-    @ManyToOne
     @JoinColumn(name = "section_id")
     private Section section;
 
